@@ -28,10 +28,6 @@ MIDLOCMicrobiome_biomdata$counts <- features_table_norm
 otu_table <- as.matrix(MIDLOCMicrobiome_biomdata$counts)
 colSums(otu_table)
 
-#creating a compositionplot with rbiom
-compositionalplot <- taxa_stacked(MIDLOCMicrobiome_biomdata, taxa = 15, rank = "Genus", unc = "drop", facet.by = "CONTRAST_Group")
-compositionalplot
-
 #creating a compositionalplot with OmicFlow
 library(OmicFlow)
 metadata <- as.data.table(MIDLOCMicrobiome_biomdata$metadata)
@@ -51,20 +47,6 @@ taxa <- metagenomics$new(
   metaData = metadata,
   countData = countData,
   featureData = featureData
-)
-
-composition <- taxa$composition(
-  feature_rank = "Genus",
-  feature_top = 15,
-  normalize = FALSE,
-  col_name = "CONTRAST_Group"
-)
-
-composition_plot(
-  data = composition$data,
-  palette = composition$palette,
-  feature_rank = "Genus",
-  group_by = "CONTRAST_Group"
 )
 
 composition_article <- taxa$composition(
