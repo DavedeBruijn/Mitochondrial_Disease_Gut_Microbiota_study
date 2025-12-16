@@ -38,9 +38,6 @@ length(intersect(rownames(otu_table_MD), rownames(otu_table_lifeline)))
 length(setdiff(rownames(otu_table_MD), rownames(otu_table_lifeline)))
 length(setdiff(rownames(otu_table_lifeline), rownames(otu_table_MD)))
 
-#checking the properties
-biom_list <- list(MIDLOC_biomdata_MD, MIDLOC_biomdata_lifeline, MIDLOC_biomdata_T1D)
-
 #remove metadata until I have metadata for lifelines
 MIDLOC_biomdata_MD$metadata <- NULL
 View(MIDLOC_biomdata_MD$metadata)
@@ -70,19 +67,10 @@ different_values_lifeline
 
 different_values_T1D <- length(setdiff(MIDLOC_biomdata_T1D$taxonomy$.otu, MIDLOC_microbiomedata$taxonomy$.otu))
 different_values_T1D
+
 #checking if rowSums
 not_zero <- rowSums(otu_table) != 0
 all(not_zero)
-
-#checking the alpha diversity
-ad_MIDLOCMicrobiome <- adiv_table(MIDLOC_microbiomedata, adiv = ".all")
-View(ad_MIDLOCMicrobiome)
-ad_MIDLOC_lifeline <- adiv_table(MIDLOC_biomdata_lifeline, adiv = ".all")
-View(ad_MIDLOC_lifeline)
-ad_MIDLOC_MD <- adiv_table(MIDLOC_biomdata_MD, adiv = ".all")
-View(ad_MIDLOC_MD)
-ad_MIDLOC_T1D <- adiv_table(MIDLOC_biomdata_T1D, adiv = ".all")
-View(ad_MIDLOC_T1D)
 
 #lifelines
 shared_values <- intersect(ad_MIDLOCMicrobiome$.diversity, ad_MIDLOC_lifeline$.diversity)
