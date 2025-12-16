@@ -11,6 +11,20 @@ MIDLOCMicrobiome_biompath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Micro
 MIDLOCMicrobiome_biomdata <- as_rbiom(MIDLOCMicrobiome_biompath)
 MIDLOCMicrobiome_biomdata
 
+#changing type to group
+names(MIDLOCMicrobiome_biomdata$metadata)[2] <- "group"
+
+#normalize by the root since certain count were removed
+features_table <- MIDLOCMicrobiome_biomdata$counts
+col_sums <- col_sums(features_table)
+features_table_norm <- features_table
+features_table_norm$v <- features_table_norm$v/col_sums[features_table$j]
+col_sums(features_table_norm)
+MIDLOCMicrobiome_biomdata$counts <- features_table_norm
+
+#making otu_table
+otu_table <- as.matrix(MIDLOCMicrobiome_biomdata$counts)
+
 #alpha diversity (Shannon)
 ad_MIDLOCMicrobiome_shannon  <- adiv_table(MIDLOCMicrobiome_biomdata, adiv = "Shannon")
 View(ad_MIDLOCMicrobiome_shannon)
