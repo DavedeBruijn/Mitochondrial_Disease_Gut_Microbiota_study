@@ -165,7 +165,3 @@ pathabundancetable_Microbiome_T1D
 MIDLOCMicrobiome_biom_pathabundance_T1D_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/T1D data/02_metaphlan_subsetting/02_subsetted_andBiom_pathabundance_T1D.biom"
 write_biom(pathabundancetable_Microbiome_T1D, MIDLOCMicrobiome_biom_pathabundance_T1D_savepath)
 
-#extra checks for the pathcoverage and sanity check
-filtered_pathabundance_MD <- pathabundancetable_Microbiome[!grepl("\\|", pathabundancetable_Microbiome$`# Pathway`),]
-filtered_pathabundance_Control <- pathabundancetable_Microbiome_lifeline[!grepl("\\|", pathabundancetable_Microbiome_lifeline$`# Pathway`),]
-filtered_pathabundance_T1D <- pathabundancetable_Microbiome_T1D[!grepl("\\|", pathabundancetable_Microbiome_T1D$`# Pathway`),]
