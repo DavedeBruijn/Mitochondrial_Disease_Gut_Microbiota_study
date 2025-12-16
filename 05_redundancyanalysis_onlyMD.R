@@ -11,7 +11,7 @@ MIDLOCMicrobiom_biompath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microb
 MIDLOCMicrobiom_biomdata <- as_rbiom(MIDLOCMicrobiom_biompath)
 MIDLOCMicrobiom_biomdata
 
-#removing the extra rank
+#renaming the rank
 colnames(MIDLOCMicrobiom_biomdata$taxonomy) <- c(".otu", "pathway", "genus", "species")
 MIDLOCMicrobiom_biomdata
 
@@ -52,12 +52,9 @@ MIDLOC_rda <- dbrda(t(otu_table) ~ MIDLOCMicrobiom_biomdata$metadata$age+MIDLOCM
 MIDLOC_rda_nmdas <- dbrda(t(otu_table) ~ MIDLOCMicrobiom_biomdata$metadata$nmdas, 
                           data = MIDLOCMicrobiom_biomdata$metadata, distance = "bray")
 
-#MIDLOC_rda <- dbrda(dist_matrix ~ MIDLOCMicrobiom_biomdata$metadata$age+MIDLOCMicrobiom_biomdata$metadata$sex_code +MIDLOCMicrobiom_biomdata$metadata$nmdas+MIDLOCMicrobiom_biomdata$metadata$diabetes_code +MIDLOCMicrobiom_biomdata$metadata$heteroplasmy+ MIDLOCMicrobiom_biomdata$metadata$bmi+MIDLOCMicrobiom_biomdata$metadata$bloating_score+ MIDLOCMicrobiom_biomdata$metadata$diarrhea_score+ MIDLOCMicrobiom_biomdata$metadata$constipation_score + MIDLOCMicrobiom_biomdata$metadata$laxatives_code + MIDLOCMicrobiom_biomdata$metadata$probiotica,
-#                    data = MIDLOCMicrobiom_biomdata$metadata, distance = "bray")
-#MIDLOC_rda2 <- dbrda(dist_matrix ~ age,
-#                     data = MIDLOCMicrobiom_biomdata$metadata, distance = "bray")
 
 anova(MIDLOC_rda, permutations = 9999, by = "margin")
+
 #checking multicollinearity
 vif_values <- vegan::vif.cca(MIDLOC_rda)
 vif_values
@@ -80,18 +77,8 @@ lines(lowess(Fitted_values, Residuals), col = "red", lwd = 2)
 qqnorm(residuals(MIDLOC_rda))
 qqline(Residuals, col = "red")
 
-#Redundancy analysis
-#summary(MIDLOC_rda)
-#anova_results <- anova(MIDLOC_rda, by = "margin")
-#anova_results
-
-#summary(MIDLOC_rda_nmdas)
-#anova(MIDLOC_rda_nmdas, by = "margin", permutations = 9999)
-
-#checking the explained variance with PERMANOVA
+#checking the explained variance 
 dist_matrix <- vegdist(t(otu_table), method = "bray")
-adonis2(dist_matrix ~ MIDLOCMicrobiom_biomdata$metadata$age+MIDLOCMicrobiom_biomdata$metadata$sex+MIDLOCMicrobiom_biomdata$metadata$nmdas+MIDLOCMicrobiom_biomdata$metadata$laxatives +MIDLOCMicrobiom_biomdata$metadata$heteroplasmy+ MIDLOCMicrobiom_biomdata$metadata$bmi+MIDLOCMicrobiom_biomdata$metadata$bloating_score+ MIDLOCMicrobiom_biomdata$metadata$diarrhea_score+ MIDLOCMicrobiom_biomdata$metadata$constipation_score ,
-        data = MIDLOCMicrobiom_biomdata$metadata, by = "margin")
 
 #looping all the variables seperated in a rda
 variables_RDA <- colnames(MIDLOCMicrobiom_biomdata$metadata)
