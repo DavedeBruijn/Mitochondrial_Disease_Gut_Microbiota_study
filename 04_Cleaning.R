@@ -7,8 +7,8 @@ library(tidyverse)
 library(dplyr)
 
 # setting library paths
-MIDLOC_pathabundancepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/03_Merged/03_Merged.biom"
-MIDLOC_pathcoveragepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/read_annotation/merged_pathcoverage.tsv"
+MIDLOC_pathabundancepath <- 
+MIDLOC_pathcoveragepath <- 
 
 # import biom file into R
 MIDLOC_microbiomdata_pathabundance <- as_rbiom(MIDLOC_pathabundancepath)
@@ -38,7 +38,7 @@ MIDLOC_microbiomdata_pathabundance$samples[98:150]<- paste0("MIDLOC", 100:152)
 MIDLOC_microbiomdata_pathabundance$samples
 
 #adding metadata 
-MIDLOC_metadatapath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/metdata.tsv"
+MIDLOC_metadatapath <- 
 #add metadata to R
 metadata<-readr::read_tsv(MIDLOC_metadatapath)
 print(metadata)
@@ -62,7 +62,7 @@ View(clean_metadata)
 MIDLOC_microbiomdata_pathabundance$metadata <- clean_metadata
 
 #save rbiom object to a file 
-MIDLOC_biomdata_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/04_Cleaned/04_cleaned_MIDLOC.biom"
+MIDLOC_biomdata_savepath <- 
 write_biom(MIDLOC_microbiomdata_pathabundance, MIDLOC_biomdata_savepath)
 
 # check the distribution

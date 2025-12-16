@@ -7,7 +7,7 @@ library(tidyr)
 library(tibble)
 
 # setting library paths
-MIDLOCMicrobiome_biompath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/04_Cleaned/04_cleaned_MIDLOC.biom"
+MIDLOCMicrobiome_biompath <- 
 
 # import biom file into R
 MIDLOCMicrobiome_biomdata <- as_rbiom(MIDLOCMicrobiome_biompath)

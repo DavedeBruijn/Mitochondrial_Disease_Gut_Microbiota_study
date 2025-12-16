@@ -5,7 +5,7 @@ library(vegan)
 library(dplyr)
 
 # setting library paths
-MIDLOCMicrobiome_biompath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/04_Cleaned/04_cleaned_MIDLOC.biom"
+MIDLOCMicrobiome_biompath <-
 
 # import biom file into R
 MIDLOC_microbiomedata <- as_rbiom(MIDLOCMicrobiome_biompath)
@@ -130,9 +130,9 @@ bdiv_microbial
 
 #saving data to import figure data
 library("readr")
-centroids_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/05_Beta_diversity/centroids.tsv"
+centroids_savepath <- 
 write_tsv(centroids, centroids_savepath)
-pcoa_df_vegdist_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/05_Beta_diversity/pcoa_df_vegdist.tsv"
+pcoa_df_vegdist_savepath <- 
 write_tsv(pcoa_df_vegdist, pcoa_df_vegdist_savepath)
-pcoa_variance_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/05_Beta_diversity/pcoa_variance.tsv"
+pcoa_variance_savepath <- 
 write_tsv(pcoa_variance ,pcoa_variance_savepath)

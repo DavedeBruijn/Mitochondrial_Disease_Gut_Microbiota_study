@@ -7,7 +7,7 @@ library(slam)
 library(data.table)
 
 # setting library paths
-MIDLOCMicrobiome_biompath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/04_Cleaned/04_cleaned_MIDLOC.biom"
+MIDLOCMicrobiome_biompath <- 
 
 # import biom file into R
 MIDLOCMicrobiome_biomdata <- as_rbiom(MIDLOCMicrobiome_biompath)
@@ -37,7 +37,7 @@ otu_table <- as.matrix(MIDLOCMicrobiome_biomdata$counts)
 colSums(otu_table)
 
 #adding the pathcoverage 30 table
-pathcoverage_30_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/00_SanityCheck/pathcoverage_30.tsv"
+pathcoverage_30_savepath <- 
 pathcoverage_30 <- readr::read_tsv(pathcoverage_30_savepath)
 
 otu_table_30 <- otu_table[row.names(otu_table) %in% pathcoverage_30$X..Pathway,]
@@ -54,7 +54,7 @@ Diff_pathway_table_otu <- taxa_stats(MIDLOCMicrobiome_biomdata, rank = 0, taxa =
 View(Diff_pathway_table_otu)
 
 #adding the filtered pathcoverage 50 table
-pathcoverage_50_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/00_SanityCheck/pathcoverage_50_filtered.tsv"
+pathcoverage_50_savepath <- 
 pathcoverage_50 <- readr::read_tsv(pathcoverage_50_savepath)
 
 otu_table_50 <- otu_table[row.names(otu_table) %in% pathcoverage_50$X..Pathway,]
@@ -100,7 +100,7 @@ DAA_pathway$FDR_1 <-p.adjust(DAA_pathway$pvalue_1 , method = "fdr")
 DAA_pathway$FDR_2 <-p.adjust(DAA_pathway$pvalue_2 , method = "fdr")
 
 #checking with OmicFlow
-pathcoverage_50_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/00_SanityCheck/pathcoverage_50.tsv"
+pathcoverage_50_savepath <- 
 pathcoverage_50 <- readr::read_tsv(pathcoverage_50_savepath)
 
 otu_table_50 <- otu_table[row.names(otu_table) %in% pathcoverage_50$X..Pathway,]
@@ -186,7 +186,7 @@ DAA_pathway_plot <- DAA_pathway_plot + theme(legend.position="none")
 
 # Diagram image
 library(cowplot)
-diagram <- ggdraw() + draw_image("C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/05_DAA/DAA_func_Aspartate_figure.png")
+diagram <- ggdraw() + draw_image("filepath/05_DAA/DAA_func_Aspartate_figure.png")
 
 # Combine
 plot_grid(DAA_pathway_plot, diagram, ncol = 1, labels = c("A", "B"))

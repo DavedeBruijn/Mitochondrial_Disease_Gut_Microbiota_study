@@ -5,7 +5,7 @@ library(dplyr)
 library(rbiom)
 
 # setting library paths
-MIDLOCMicrobiome_abundance_biompath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/04_Cleaned/04_cleaned_MIDLOC.biom"
+MIDLOCMicrobiome_abundance_biompath <- 
 
 # import biom file into R
 MIDLOCMicrobiome_abundance_biomdata <- as_rbiom(MIDLOCMicrobiome_abundance_biompath)
@@ -67,4 +67,4 @@ adiv_microbial_abundance
 
 #Saving the shannon diversity
 library(readr)
-write_tsv(ad_MIDLOCMicrobiome_abundance_shannon, "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/plots/adiv_functional.tsv")
+write_tsv(ad_MIDLOCMicrobiome_abundance_shannon, )

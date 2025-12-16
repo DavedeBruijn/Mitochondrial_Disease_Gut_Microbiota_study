@@ -6,7 +6,7 @@ library(rbiom)
 library(tibble)
 
 # setting library paths
-MIDLOCMicrobiome_pathabundance_biompath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/MD data/01_loaded_data/01_loaded_MIDLOCpathabundancetable.tsv"
+MIDLOCMicrobiome_pathabundance_biompath <- 
 
 #import tsv files
 pathabundancetable_Microbiome <- readr::read_tsv(MIDLOCMicrobiome_pathabundance_biompath)
@@ -48,7 +48,7 @@ MIDLOC_pathabundance_biom$taxonomy <- pathabundance_taxonomytable
 MIDLOC_pathabundance_biom
 
 #Import metadata for subsetting
-metadatasubsetting_path <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/02_subsetted_andBiom/metadata_subsetting.txt"
+metadatasubsetting_path <-
 metadatasubsetting <- readr::read_tsv(metadatasubsetting_path)
 metadatasubsetting <- rename(metadatasubsetting, .sample = sample)
 metadatasubsetting$...2 <- NULL
@@ -66,11 +66,11 @@ MIDLOC_pathabundance_biom
 View(MIDLOC_pathabundance_biom$metadata)
 
 #save rbiom object to a file
-MIDLOCMicrobiome_biom_pathabundance_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/02_subsetted_andBiom/02_subsetted_andBiom_pathabundance.biom"
+MIDLOCMicrobiome_biom_pathabundance_savepath <- 
 write_biom(MIDLOC_pathabundance_biom, MIDLOCMicrobiome_biom_pathabundance_savepath)
 
 # setting library paths (Healthy controls)
-MIDLOCMicrobiome_pathabundance_biompath_lifeline <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/01_loaded/01_loaded_MIDLOCpathabundancetable_lifeline.tsv"
+MIDLOCMicrobiome_pathabundance_biompath_lifeline <- 
 
 #import tsv files
 pathabundancetable_Microbiome_lifeline <- readr::read_tsv(MIDLOCMicrobiome_pathabundance_biompath_lifeline)
@@ -112,12 +112,12 @@ MIDLOC_pathabundance_biom_lifeline$taxonomy <- pathabundance_taxonomytable_lifel
 MIDLOC_pathabundance_biom_lifeline
 
 #save rbiom object to a file
-MIDLOCMicrobiome_biom_pathabundance_lifeline_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/02_subsetted_andBiom/02_subsetted_andBiom_pathabundance_lifeline.biom"
+MIDLOCMicrobiome_biom_pathabundance_lifeline_savepath <- 
 write_biom(MIDLOC_pathabundance_biom_lifeline, MIDLOCMicrobiome_biom_pathabundance_lifeline_savepath)
 
 
 # setting library paths (Type-1 diabetes)
-MIDLOCMicrobiome_pathabundance_biompath_T1D <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/T1D data/01_loaded/01_loaded_MIDLOCpathabundancetable.tsv"
+MIDLOCMicrobiome_pathabundance_biompath_T1D <- 
 
 #import tsv files
 pathabundancetable_Microbiome_T1D <- readr::read_tsv(MIDLOCMicrobiome_pathabundance_biompath_T1D)
@@ -162,6 +162,6 @@ pathabundancetable_Microbiome_T1D$taxonomy <- pathabundance_taxonomytable_T1D
 pathabundancetable_Microbiome_T1D
 
 #save rbiom object to a file
-MIDLOCMicrobiome_biom_pathabundance_T1D_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/T1D data/02_metaphlan_subsetting/02_subsetted_andBiom_pathabundance_T1D.biom"
+MIDLOCMicrobiome_biom_pathabundance_T1D_savepath <- 
 write_biom(pathabundancetable_Microbiome_T1D, MIDLOCMicrobiome_biom_pathabundance_T1D_savepath)
 

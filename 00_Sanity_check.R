@@ -5,9 +5,9 @@ library(tibble)
 library(dplyr)
 
 #setting librarypaths
-MD_pathcoverage_path <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/MD data/01_loaded_data/01_loaded_MIDLOCpathcoveragetable.tsv"
-Control_pathcoverage_path <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/01_loaded/01_loaded_MIDLOCpathcoveragetable_lifeline.tsv"
-T1D_pathcoverage_path <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/T1D data/01_loaded/01_loaded_MIDLOCpathcoveragetable.tsv"
+MD_pathcoverage_path <- 
+Control_pathcoverage_path <- 
+T1D_pathcoverage_path <- 
 
 #loading pathcoverage
 pathcoveragetable_MD <- readr::read_tsv(MD_pathcoverage_path)
@@ -74,12 +74,12 @@ pathway <- pathcoveragetable_Control[pathcoveragetable_Control$`# Pathway`== "PE
 rowMeans(pathway[,-1])
 
 #save pathways with a coverage of 30 or higher
-pathcoverage_30_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/00_SanityCheck/pathcoverage_30.tsv"
+pathcoverage_30_savepath <- 
 write_tsv(pathcoverage_30, pathcoverage_30_savepath)
 
 #save only pathways with a coverage of 50 or higher
-pathcoverage_50_filtered_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/00_SanityCheck/pathcoverage_50_filtered.tsv"
+pathcoverage_50_filtered_savepath <- 
 write_tsv(pathcoverage_50_filtered, pathcoverage_50_savepath)
 
-pathcoverage_50_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/00_SanityCheck/pathcoverage_50.tsv"
+pathcoverage_50_savepath <- 
 write_tsv(pathcoverage_50, pathcoverage_50_savepath)

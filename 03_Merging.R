@@ -3,9 +3,9 @@ library("biomformat")
 library(rbiom)
 
 # setting library paths MD data
-MIDLOC_biompath_Lifeline <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/02_subsetted_andBiom/02_subsetted_andBiom_pathabundance_lifeline.biom"
-MIDLOC_biompath_MD <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/02_subsetted_andBiom/02_subsetted_andBiom_pathabundance.biom"
-MIDLOC_biompath_T1D <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/T1D data/02_metaphlan_subsetting/02_subsetted_andBiom_pathabundance_T1D.biom"
+MIDLOC_biompath_Lifeline <- 
+MIDLOC_biompath_MD <- 
+MIDLOC_biompath_T1D <- 
 
 # import biom files into R
 MIDLOC_biomdata_MD <- as_rbiom(MIDLOC_biompath_MD)
@@ -94,5 +94,5 @@ different_values <- length(setdiff(ad_MIDLOC_MD$.diversity, ad_MIDLOC_T1D$.diver
 different_values
 
 #save rbiom object to a file
-MIDLOCMicrobiomesavepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/03_Merged/03_Merged.biom"
+MIDLOCMicrobiomesavepath <- 
 write_biom(MIDLOC_microbiomedata, MIDLOCMicrobiomesavepath)
