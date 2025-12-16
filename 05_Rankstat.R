@@ -5,7 +5,7 @@ library(vegan)
 library(dplyr)
 
 # setting library paths
-MIDLOCmicrobioom_biompath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/04_cleaned/04_cleaned_MIDLOC.biom"
+MIDLOCmicrobioom_biompath <- 
 
 # import biom file into R
 MIDLOCMicrobioom_biomdata <- as_rbiom(MIDLOCmicrobioom_biompath)

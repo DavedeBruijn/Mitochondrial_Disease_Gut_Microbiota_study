@@ -4,8 +4,8 @@ library(rbiom)
 
 #adding metaphlan to the lifelines data
 #setting library paths Lifeline data
-MIDLOC_biompath_Lifeline <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/read_annotation/biom_with_taxonomy.biom"
-MIDLOC_metaphlan_tables_Lifeline <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/01_loaded/01_loaded_MIDLOCmetaphlan_tables_lifeline.tsv"
+MIDLOC_biompath_Lifeline <- 
+MIDLOC_metaphlan_tables_Lifeline <- 
 
 # import biom files into R
 MIDLOC_biomdata_lifeline <- as_rbiom(MIDLOC_biompath_Lifeline)
@@ -22,13 +22,13 @@ otu_table_lifeline <- as.matrix(MIDLOC_biomdata_lifeline$counts)
 View(otu_table_lifeline)
 
 #save rbiom object to a file
-MIDLOCMicrobiome_lifeline_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/02_metaphlan_subset/02_metaphlan_subset_lifeline.biom"
+MIDLOCMicrobiome_lifeline_savepath <- 
 write_biom(MIDLOC_biomdata_lifeline, MIDLOCMicrobiome_lifeline_savepath)
 
 #adding metaphlan to the MD data and subset
 # setting library paths MD data
-MIDLOC_biompath_MD <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/MD data/01_loaded_data/01_loaded_MIDLOC.biom"
-MIDLOC_metaphlan_tables_MDpath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/MD data/01_loaded_data/01_loaded_MIDLOCmetaphlan_tables.tsv"
+MIDLOC_biompath_MD <- 
+MIDLOC_metaphlan_tables_MDpath <- 
 
 # import biom files into R
 MIDLOC_biomdata_MD <- as_rbiom(MIDLOC_biompath_MD)
@@ -51,5 +51,5 @@ MIDLOC_biomdata_MD_subset <- subset(MIDLOC_biomdata_MD, MIDLOC_biomdata_MD$metad
 MIDLOC_biomdata_MD_subset
 
 #save rbiom object to a file
-MIDLOCMicrobiome_MD_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/MD data/Microbiome/02_metaphlan_subset_MD/02_metaphlan_subset_MD.biom"
+MIDLOCMicrobiome_MD_savepath <- 
 write_biom(MIDLOC_biomdata_MD_subset, MIDLOCMicrobiome_MD_savepath)

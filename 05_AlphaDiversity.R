@@ -5,7 +5,7 @@ library(dplyr)
 library(rbiom)
 
 # setting library paths
-MIDLOCMicrobiome_biompath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/04_cleaned/04_cleaned_MIDLOC.biom"
+MIDLOCMicrobiome_biompath <- 
 
 # import biom file into R
 MIDLOCMicrobiome_biomdata <- as_rbiom(MIDLOCMicrobiome_biompath)
@@ -59,3 +59,38 @@ adiv_microbial <- ggplot(ad_MIDLOCMicrobiome_shannon, aes(x = type, y = .diversi
   annotate("text", x = 1.5, y = 5.35, label = "p = 0.0603", size = 4)
 adiv_microbial
 
+#creating plot for the article
+adiv_microbial_art <- ggplot(ad_MIDLOCMicrobiome_shannon, aes(x = group, y = .diversity, color = group))+
+  geom_violin(fill = NA, linewidth = 1.3)+
+  geom_boxplot(width = 0.15, outlier.shape = NA, alpha = 0.9)+
+  scale_color_manual(values = c("Control" = "#00BFC4", "MD" = "#F8766D", "T1D" = "#BA72FF"))+
+  geom_jitter(width = 0.1, size = 1.5, alpha = 0.75)+
+  theme_minimal()+
+  labs(y = "Shannon Diversity (Microbial)")
+adiv_microbial_art
+
+#adding the functional Alpha diversity to combine it into one graph
+#adding functional alpha diversity to this project so I could combine it
+library(readr)
+ad_MIDLOCMicrobiome_shannon_functional <- read_tsv("/adiv_functional.tsv")
+
+adiv_microbial_art_func <- ggplot(ad_MIDLOCMicrobiome_shannon_functional, aes(x = group, y = .diversity, color = group))+
+  geom_violin(fill = NA, linewidth = 1.3)+
+  geom_boxplot(width = 0.15, outlier.shape = NA, alpha = 0.9)+
+  scale_color_manual(values = c("Control" = "#00BFC4", "MD" = "#F8766D", "T1D" = "#BA72FF"))+
+  geom_jitter(width = 0.1, size = 1.5, alpha = 0.75)+
+  theme_minimal()+
+  labs(y = "Shannon Diversity (Metacyc Pathways)")+
+  annotate("segment", x = 1, xend = 3, y = 2.95, yend = 2.95, linewidth = 0.5, color = "black") +
+  annotate("segment", x = 1, xend = 1, y = 2.9, yend = 3, linewidth = 0.5, color = "black") +
+  annotate("segment", x = 3, xend = 3, y = 2.9, yend = 3, linewidth = 0.5, color = "black") +
+  annotate("text", x = 2, y = 3.05, label = "p = 0.004*", size = 4)
+adiv_microbial_art_func
+
+#combining the plot
+library(patchwork)
+adiv_complete <- adiv_microbial_art / adiv_microbial_art_func
+adiv_complete + plot_annotation(
+  tag_levels = "A",
+  theme = theme(plot.title = element_text(hjust = 0.5))
+)

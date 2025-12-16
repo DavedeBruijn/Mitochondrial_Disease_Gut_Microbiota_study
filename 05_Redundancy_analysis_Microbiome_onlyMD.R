@@ -5,14 +5,14 @@ library(vegan)
 library(dplyr)
 
 # setting library paths
-MIDLOCMicrobiom_biompath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/MD data/Diet/04_subsetted_data/04_subsetted_MIDLOCMicrobiome.biom"
+MIDLOCMicrobiom_biompath <- 
 
 # import biom file into R
 MIDLOCMicrobiom_biomdata <- as_rbiom(MIDLOCMicrobiom_biompath)
 MIDLOCMicrobiom_biomdata
 
 #add new metadata
-MIDLOC_metadatapath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/metdata.tsv"
+MIDLOC_metadatapath <- 
 #add metadata to R
 metadata<-readr::read_tsv(MIDLOC_metadatapath)
 View(metadata)
@@ -163,7 +163,7 @@ RDA_plot + plot_annotation(
 
 #Saving the data as TSV file
 library(readr)
-write_tsv(RDAresults, "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/05_RDA/RDAresults.tsv")
+write_tsv(RDAresults, )
 
 # analysing the best model with ordistep
 mod0 <- dbrda(dist_matrix ~ 1, data = MIDLOCMicrobiom_biomdata$metadata, distance = "bray") # Model with intercept only

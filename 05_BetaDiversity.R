@@ -5,7 +5,7 @@ library(vegan)
 library(dplyr)
 
 # setting library paths
-MIDLOCMicrobiome_biompath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/04_cleaned/04_cleaned_MIDLOC.biom"
+MIDLOCMicrobiome_biompath <- 
 
 # import biom file into R
 MIDLOC_microbiomedata <- as_rbiom(MIDLOCMicrobiome_biompath)
@@ -190,9 +190,9 @@ permutest(bd)
 
 #Combining the Beta Diversity plots for the article
 #adding the functional plot for patchwork to combine them
-centroids_functional <- data.table::fread("C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/05_Beta_diversity/centroids.tsv")
-pcoa_df_vegdist_functional <- data.table::fread("C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/05_Beta_diversity/pcoa_df_vegdist.tsv")
-pcoa_variance_functional <- data.table::fread("C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/05_Beta_diversity/pcoa_variance.tsv")
+centroids_functional <- data.table::fread("/centroids.tsv")
+pcoa_df_vegdist_functional <- data.table::fread("/pcoa_df_vegdist.tsv")
+pcoa_variance_functional <- data.table::fread("/pcoa_variance.tsv")
 pcoa_variance_functional$percentage <- pcoa_variance_functional$variance*100
 pcoa_variance_functional$percentage <- lapply(pcoa_variance_functional$percentage, function(x) sprintf("%.1f", x))
 
@@ -217,7 +217,7 @@ bdiv_functional <- bdiv_functional + theme(legend.position="bottom")
 bdiv_functional
 
 #adding the redundancy analysis plot
-RDAresults <- data.table::fread("C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/05_RDA/RDAresults.tsv")
+RDAresults <- data.table::fread("/RDAresults.tsv")
 
 RDAresults <- RDAresults %>%
   mutate(Variable = factor(Variable, levels = Variable[order(r.squared, decreasing = FALSE)]))
@@ -236,7 +236,7 @@ RDA_plot <- ggplot(RDAresults, aes(x = ExplainedPercentage, y = Variable, fill =
 RDA_plot <- RDA_plot + theme(legend.position= "bottom")
 
 #functionality
-RDAresults_func <- data.table::fread("C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/05_RDA/RDAresults.tsv")
+RDAresults_func <- data.table::fread("/RDAresults.tsv")
 
 RDAresults_func <- RDAresults_func %>%
   mutate(Variable = factor(Variable, levels = Variable[order(r.squared, decreasing = FALSE)]))

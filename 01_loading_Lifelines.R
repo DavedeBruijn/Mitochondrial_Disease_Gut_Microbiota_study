@@ -3,41 +3,34 @@ library(phyloseq)
 library(readr)
 
 # setting library paths
-MIDLOC_biompath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/read_annotation/metaphlan_with_taxonomy.biom"
-#MIDLOC_metadatapath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/MD data/Raw_data/metadata_MD_complete.tsv"
-MIDLOC_genefamiliespath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/read_annotation/merged_genefamilies.tsv"
-MIDLOC_pathabundancepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/read_annotation/merged_pathabundance.tsv"
-MIDLOC_pathcoveragepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/read_annotation/merged_pathcoverage.tsv"
-MIDLOC_metaphlan_tables <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/read_annotation/merged_metaphlan_tables.tsv"
+MIDLOC_biompath <- 
+MIDLOC_metadatapath <- 
+MIDLOC_genefamiliespath <- 
+MIDLOC_pathabundancepath <- 
+MIDLOC_pathcoveragepath <- 
+MIDLOC_metaphlan_tables <- 
 
 # import biom file into R (Rbiom(2.0.13 is needed to load the file))
 remove.packages("rbiom")
-install.packages("C:/Users/Z141231/OneDrive - Radboudumc/Rdata/rbiom_2.0.13.tar.gz", repos = NULL, type = "source")
+install.packages("filepath/rbiom_2.0.13.tar.gz", repos = NULL, type = "source")
 library(rbiom)
 packageVersion("rbiom")
 
 MIDLOC_biomdata <- as_rbiom(MIDLOC_biompath)
 MIDLOC_biomdata
-MIDLOC_biomdata_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/read_annotation/biom_with_taxonomy.biom"
+MIDLOC_biomdata_savepath <- 
 write_biom(MIDLOC_biomdata, MIDLOC_biomdata_savepath)
 
 #loading the file with the updated version of rbiom
 install.packages("rbiom")
 library(rbiom)
-MIDLOC_biompathloaded <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/read_annotation/biom_with_taxonomy.biom"
+MIDLOC_biompathloaded <- 
 MIDLOC_biomdata <- as_rbiom(MIDLOC_biompathloaded)
 MIDLOC_biomdata
 
 #add metadata to R
 metadata<-readr::read_tsv(MIDLOC_metadatapath)
 print(metadata)
-
-#rename metadata columnnames
-#colnames(metadata)<- c('.sample','age','sex', 'sex_code', 'height', 'weight', 'BMI', 'NMDAS', "Patient_type", "Phenotype", "Diabetes", "heteroplasmy", "Timepoint", 'Timepoint_code')
-
-#rename biom samples names for the metadata
-#new_names <- c("MIDLOC06T24")
-#MIDLOC06T24_biomdata$samples <- new_names
 
 #create an otu_table to check the counts
 otu_table <- as.matrix(MIDLOC_biomdata$counts)
@@ -60,14 +53,14 @@ metaphlan_tables <- data.table::fread(MIDLOC_metaphlan_tables)
 View(metaphlan_tables)
 
 #save rbiom object to a file
-MIDLOC_biomdata_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/01_loaded/01_loaded_MIDLOC_lifeline.biom"
+MIDLOC_biomdata_savepath <- 
 write_biom(MIDLOC_biomdata, MIDLOC_biomdata_savepath)
 
 #save tsv object to a file
-genefamiliestable_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/01_loaded/01_loaded_MIDLOCgenefamiliestable_lifeline.tsv"
-pathabundancetable_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/01_loaded/01_loaded_MIDLOCpathabundancetable_lifeline.tsv"
-pathcoveragetable_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/01_loaded/01_loaded_MIDLOCpathcoveragetable_lifeline.tsv"
-metaphlan_tables_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/01_loaded/01_loaded_MIDLOCmetaphlan_tables_lifeline.tsv"
+genefamiliestable_savepath <- 
+pathabundancetable_savepath <- 
+pathcoveragetable_savepath <- 
+metaphlan_tables_savepath <- 
 
 write_tsv(genefamiliestable, genefamiliestable_savepath)
 write_tsv(pathabundancetable, pathabundancetable_savepath)
@@ -88,21 +81,9 @@ log_pathabundance <- log10(hist_pathabundance + 1e-5)
 hist(log_pathabundance)
 
 #Loading multiqc report
-multiqc_stats <- readr::read_tsv("C:/Users/Z141231/OneDrive - Radboudumc/Rdata/MD data/Raw_data/merged_multiqc_stats.tsv")
+multiqc_stats <- readr::read_tsv("filepath/merged_multiqc_stats.tsv")
 mean(multiqc_stats$`Input Reads`)
 sd(multiqc_stats$`Input Reads`)
 mean(multiqc_stats$`Clean Reads %`)
 mean(multiqc_stats$`Clean Reads`)
 sd(multiqc_stats$`Clean Reads`)
-
-#look at the metaphlan_tables of all the datasets
-MIDLOC_metaphlan_tables_lifelines <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/read_annotation/merged_metaphlan_tables.tsv"
-metaphlan_tables_lifeline <- data.table::fread(MIDLOC_metaphlan_tables_lifelines)
-View(metaphlan_tables_lifeline)
-
-MIDLOC_metaphlan_tables_MD <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/MD data/Raw_data/merged_metaphlan_tables.tsv"
-metaphlan_tables_MD <- data.table::fread(MIDLOC_metaphlan_tables_MD)
-View(metaphlan_tables_MD)
-
-shared_otus <- intersect(metaphlan_tables_lifeline$V1, metaphlan_tables_MD$V1)
-View(shared_otus)
