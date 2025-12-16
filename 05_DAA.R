@@ -13,7 +13,7 @@ MIDLOCMicrobiome_biompath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Micro
 MIDLOCMicrobiome_biomdata <- as_rbiom(MIDLOCMicrobiome_biompath)
 MIDLOCMicrobiome_biomdata
 
-#removing the extra rank
+#renaming the rank
 colnames(MIDLOCMicrobiome_biomdata$taxonomy) <- c(".otu", "pathway", "genus", "species")
 MIDLOCMicrobiome_biomdata
 
@@ -123,89 +123,3 @@ DAA_genus_plot + plot_annotation(
   theme = theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 )
 DAA_genus_plot
-
-#boxploting individual taxa
-most_significantgenus <- top_hits$
-  rbiom::taxa_boxplot(MIDLOCMicrobiome_biomdata, rank = -2, taxa = most_significantgenus, stat.by = "type")
-taxa_stats(MIDLOCMicrobiome_biomdata, rank = -2, taxa = most_significantgenus, stat.by = "type", test = "wilcox")
-rbiom::taxa_boxplot(MIDLOCMicrobiome_biomdata, rank = -2, taxa = c("GGB9747", "Hydrogenoanaerobacterium"), stat.by = "type", transform = "percent")
-
-Bifidobacterium <- c("Bifidobacterium")
-taxa_boxplot(MIDLOCMicrobiome_biomdata, rank = -2, taxa = Bifidobacterium, stat.by = "type")
-taxa_stats(MIDLOCMicrobiome_biomdata, rank = -2, taxa = Bifidobacterium, stat.by = "type" )
-
-#oscillibacter
-taxa_stats(MIDLOCMicrobiome_biomdata, rank = -2, taxa = "Oscillibacter", stat.by = "type")
-taxa_stats(MIDLOCMicrobiome_biomdata, rank = -2, taxa = "Bacteroides", stat.by = "type")
-taxa_stats(MIDLOCMicrobiome_biomdata, rank = -2, taxa = "Alistipes", stat.by = "type")
-
-#trying to group it into higher levels
-# Load your pathway abundance table
-pathways <- as.matrix(MIDLOCMicrobiome_biomdata$counts)
-pathways <- as.data.frame(pathways)
-pathways$pathway_full <- row.names(pathways)
-row.names(pathways) <- NULL
-cleaned_pathways <- pathways[!grepl("\\|", pathways$pathway_full),]
-cleaned_pathways <- cleaned_pathways %>%
-  select(pathway_full, everything())
-
-cleaned_pathways <- cleaned_pathways %>%
-  mutate(
-    pathway = sub("[:|].*", "", pathway_full),  
-    pathway_name = ifelse(grepl("[:|]", pathway_full),
-                   sub("^[^:|]+[:|]", "", pathway_full),
-                   ""))
-
-# Load the classification file
-classification_1 <- readr::read_tsv("C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/05_DAA/metacyc_pathways_info_prokaryotes_top_level.tsv")
-classification_2 <- readr::read_tsv("C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/05_DAA/metacyc_pathways_info_prokaryotes_sec_level.tsv")
-
-classification_1 <- rbind(colnames(classification_1), classification_1)
-colnames(classification_1) <- c("pathway", "biological_function")
-
-classification_2 <- rbind(colnames(classification_2), classification_2)
-colnames(classification_2) <- c("pathway", "biological_function")
-
-# Merge and group
-grouped <- cleaned_pathways %>%
-  left_join(classification_2, by = c("pathway" = "pathway"))
-  
-grouped$pathway_full <- NULL
-grouped$pathway <- NULL
-grouped$pathway_name <- NULL
-
-grouped_biological_functions <- grouped %>%
-  group_by(biological_function) %>%
-  summarise(across(starts_with("MIDLOC"), \(x) sum(x, na.rm = TRUE))) %>%
-  ungroup()
-
-#getting relative abundance
-grouped_biological_functions$biological_function[48] <- "UNMAPPED + UNINTEGRATED"
-grouped_biological_functions <- grouped_biological_functions %>%
-  column_to_rownames("biological_function") 
-features_table <- as.simple_triplet_matrix(grouped_biological_functions)
-col_sums <- col_sums(features_table)
-features_table_norm <- features_table
-features_table_norm$v <- features_table_norm$v/col_sums[features_table$j]
-col_sums(features_table_norm)
-MIDLOCMicrobiome_biofunc <- rbiom::as_rbiom(features_table_norm)
-MIDLOCMicrobiome_biofunc$metadata <- MIDLOCMicrobiome_biomdata$metadata
-
-#Differential abundance analysis
-Diff_biofunc <- taxa_stats(MIDLOCMicrobiome_biofunc, rank = 1, taxa = 0.0000001, stat.by = "group", test = "wilcox")
-View(Diff_biofunc)
-
-#create an otu_table 
-otu_table_biofunc <- as.matrix(MIDLOCMicrobiome_biofunc$counts)
-colSums(otu_table)
-
-#creating stacked plot of the genus/species contribution in the pathway
-stacked_plot_data
-
-data <- data.frame(
-  SampleID = c("Sample1", "Sample1", "Sample2", "Sample2"),
-  Pathway = c("GLYCOLYSIS I", "GLYCOLYSIS I", "GLYCOLYSIS I", "GLYCOLYSIS I"),
-  Taxon = c("Escherichia coli", "Lactococcus lactis", "Escherichia coli", "Lactococcus lactis"),
-  Abundance = c(0.3, 0.7, 0.6, 0.4)
-)
-
