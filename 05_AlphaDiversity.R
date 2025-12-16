@@ -11,7 +11,7 @@ MIDLOCMicrobiome_abundance_biompath <- "C:/Users/Z141231/OneDrive - Radboudumc/R
 MIDLOCMicrobiome_abundance_biomdata <- as_rbiom(MIDLOCMicrobiome_abundance_biompath)
 MIDLOCMicrobiome_abundance_biomdata
 
-#removing the extra rank
+#renaming the ranks
 colnames(MIDLOCMicrobiome_abundance_biomdata$taxonomy) <- c(".otu", "pathway", "genus", "species")
 MIDLOCMicrobiome_abundance_biomdata
 
@@ -68,40 +68,3 @@ adiv_microbial_abundance
 #Saving the shannon diversity
 library(readr)
 write_tsv(ad_MIDLOCMicrobiome_abundance_shannon, "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/plots/adiv_functional.tsv")
-
-
-#rarefy om te checken of het hier ook invloed op heeft (Heeft geen invloed op Alpha-Diversity)
-otu_table <- as.matrix(MIDLOCMicrobiome_abundance_biomdata$counts)
-min_col <- min(colSums(otu_table))
-MIDLOC_rare <- rbiom::rarefy(MIDLOCMicrobiome_abundance_biomdata$counts, 13495740)
-MIDLOC_rare
-otu_table_rare <- as.matrix(MIDLOC_rare$counts)
-colSums(otu_table_rare)
-
-#adding taxonomy and metadata
-MIDLOC_rare$metadata <- MIDLOCMicrobiome_abundance_biomdata$metadata
-MIDLOC_rare$taxonomy <- MIDLOCMicrobiome_abundance_biomdata$taxonomy
-
-#alpha diversity (Shannon)
-shannon_rare <- adiv_table(MIDLOC_rare, adiv = "Shannon")
-View(shannon_rare)
-
-#boxplot alpha diversity and statistical test (Can change the stat.by)(Unpaired analysis)
-adiv_boxplot_rare <- adiv_boxplot(MIDLOC_rare, layers = "vdp", adiv = "Shannon", stat.by = "group", x = 'group')
-adiv_boxplot_rare
-
-#the statistical test for the alpha diversity (However we use paired wilcoxon test so we can't use this)
-adiv_stats(MIDLOC_rare, stat.by = "group", adiv = "Shannon", test = "Wilcox")
-
-#checking the rarefy
-rare_multiplot(MIDLOCMicrobiome_abundance_biomdata)
-
-#checking if rbiom does automaticly rarefy, no since via vegan we get similar results
-shannon <- diversity(t(otu_table), "shannon")
-View(shannon)
-shannontable <- MIDLOCMicrobiome_abundance_biomdata$metadata
-shannontable$shannon <- shannon
-
-pairwise.wilcox.test(shannontable$shannon, shannontable$group, p.adjust.method = "fdr")
-wilcox.test(shannontable$shannon ~ shannontable$group)
-
