@@ -181,8 +181,6 @@ DAA_pathway_plot + plot_annotation(
   title = "Difference in relative abundance of genus in patients with MD and healthy controls",
   theme = theme(plot.title = element_text(hjust = 0.5, face = "bold"))
 )
-legend <- get_legend(DAA_pathway_plot + theme(legend.position="bottom", legend.direction = "horizontal"))
-DAA_pathway_plot <- DAA_pathway_plot + theme(legend.position="none")
 
 # Diagram image
 library(cowplot)
