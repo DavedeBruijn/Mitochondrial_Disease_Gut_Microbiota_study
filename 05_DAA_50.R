@@ -7,7 +7,7 @@ library(slam)
 library(data.table)
 
 # setting library paths
-MIDLOCMicrobiome_biompath <- 
+MIDLOCMicrobiome_biompath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/04_Cleaned/04_cleaned_MIDLOC.biom"
 
 # import biom file into R
 MIDLOCMicrobiome_biomdata <- as_rbiom(MIDLOCMicrobiome_biompath)
@@ -37,7 +37,7 @@ otu_table <- as.matrix(MIDLOCMicrobiome_biomdata$counts)
 colSums(otu_table)
 
 #adding the pathcoverage 30 table
-pathcoverage_30_savepath <- 
+pathcoverage_30_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/00_SanityCheck/pathcoverage_30.tsv"
 pathcoverage_30 <- readr::read_tsv(pathcoverage_30_savepath)
 
 otu_table_30 <- otu_table[row.names(otu_table) %in% pathcoverage_30$X..Pathway,]
@@ -54,7 +54,7 @@ Diff_pathway_table_otu <- taxa_stats(MIDLOCMicrobiome_biomdata, rank = 0, taxa =
 View(Diff_pathway_table_otu)
 
 #adding the filtered pathcoverage 50 table
-pathcoverage_50_savepath <- 
+pathcoverage_50_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/00_SanityCheck/pathcoverage_50_filtered.tsv"
 pathcoverage_50 <- readr::read_tsv(pathcoverage_50_savepath)
 
 otu_table_50 <- otu_table[row.names(otu_table) %in% pathcoverage_50$X..Pathway,]
@@ -100,7 +100,7 @@ DAA_pathway$FDR_1 <-p.adjust(DAA_pathway$pvalue_1 , method = "fdr")
 DAA_pathway$FDR_2 <-p.adjust(DAA_pathway$pvalue_2 , method = "fdr")
 
 #checking with OmicFlow
-pathcoverage_50_savepath <- 
+pathcoverage_50_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/00_SanityCheck/pathcoverage_50.tsv"
 pathcoverage_50 <- readr::read_tsv(pathcoverage_50_savepath)
 
 otu_table_50 <- otu_table[row.names(otu_table) %in% pathcoverage_50$X..Pathway,]
@@ -156,6 +156,8 @@ top_hits <- volcanoplot_results %>%
   filter(FDR_1 < 0.05) %>%
   arrange(FDR_1) 
 
+top_hits$Pathway <- sub("^[^:]*: ", "", top_hits$Pathway)
+
 hline_df <- data.frame(yintercept = -log10(0.05), Label = "FDR = 0.05")
 
 library(ggplot2)
@@ -164,7 +166,7 @@ DAA_pathway_plot <- ggplot(volcanoplot_results, aes(x = Log2FC_1, y = log10_adj.
   geom_point(alpha = 1, size = 2) +
   scale_color_gradient2(low = "blue", mid = "grey", high = "red", midpoint = 0) +
   theme_minimal()+
-  labs(x = "Fold Change log2(MD/Control)",
+  labs(x = "log2 Fold Change(MD/Control)",
        y = "-log10(p-value)",
        size = "Relative Abundance",
        colour = "Fold Change",
@@ -174,7 +176,7 @@ DAA_pathway_plot <- ggplot(volcanoplot_results, aes(x = Log2FC_1, y = log10_adj.
   geom_vline(xintercept = 0, linetype = "dotted")+
   geom_point(data = top_hits, aes(color = Log2FC_1, size = rel_abun), alpha = 1)+
   scale_size_continuous(range = c(0.1, 4), trans = "log10")+
-  geom_text_repel(data = top_hits, aes(x = Log2FC_1, y = log10_adj.pval, label = Pathway), color = "black", size = 2.5, force = 2.5, max.overlaps = 20)
+  geom_text_repel(data = top_hits, aes(x = Log2FC_1, y = log10_adj.pval, label = Pathway), color = "black", size = 2.5, force = 5, max.overlaps = 20)
 DAA_pathway_plot
 
 DAA_pathway_plot + plot_annotation(
@@ -184,7 +186,7 @@ DAA_pathway_plot + plot_annotation(
 
 # Diagram image
 library(cowplot)
-diagram <- ggdraw() + draw_image("filepath/05_DAA/DAA_func_Aspartate_figure.png")
+diagram <- ggdraw() + draw_image("C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/Functional/05_DAA/DAA_func_Aspartate_figure.png")
 
 # Combine
 plot_grid(DAA_pathway_plot, diagram, ncol = 1, labels = c("A", "B"))
