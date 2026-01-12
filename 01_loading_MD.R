@@ -10,7 +10,6 @@ MIDLOC_genefamiliespath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/MD data
 MIDLOC_pathabundancepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/MD data/Raw_data/merged_pathabundance.tsv"
 MIDLOC_pathcoveragepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/MD data/Raw_data/merged_pathcoverage.tsv"
 MIDLOC_metaphlan_tables <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/MD data/Raw_data/merged_metaphlan_tables.tsv"
-biomtree <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/TestDataRadboudumc/practicetestdata/rooted_tree.newick"
 
 # import biom file into R (Rbiom(2.0.13 is needed to load the file))
 MIDLOC_biomdata <- as_rbiom(MIDLOC_biompath)
@@ -65,9 +64,6 @@ View(pathcoveragetable)
 metaphlan_tables <- readr::read_tsv(MIDLOC_metaphlan_tables)
 View(metaphlan_tables)
 
-#add tree to the biom file
-biom$tree <- biomtree
-biom
 
 #save rbiom object to a file
 MIDLOC_biomdata_savepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/MD data/01_Loaded_data/01_loaded_MIDLOC.biom"
