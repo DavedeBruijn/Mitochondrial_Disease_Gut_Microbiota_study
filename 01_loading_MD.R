@@ -16,35 +16,6 @@ biomtree <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/TestDataRadboudumc/pra
 MIDLOC_biomdata <- as_rbiom(MIDLOC_biompath)
 MIDLOC_biomdata
 
-# create a simple matrix (It is also possible to load it via phylosec)
-#mtx <- matrix(
-  #data     = floor(runif(24) * 1000), 
-  #nrow     = 6, 
-  #dimnames = list(paste0("OTU", 1:6), paste0("Sample", 1:4)) )
-#mtx
-
-# convert matrix to rbiom -----------------------
-#MIDLOC_biomdata<- as_rbiom(biom = mtx)
-#MIDLOC_biomdata
-
-# import biom file into R
-#file <- phyloseq::import_biom(MIDLOC_biompath)
-#file
-
-#MIDLOC_biomdata <- as_rbiom(biom = file)
-#MIDLOC_biomdata
-
-#add metadata to R
-metadata<-readr::read_tsv(MIDLOC_metadatapath)
-print(metadata)
-
-#rename metadata columnnames
-#colnames(metadata)<- c('.sample','age','sex', 'sex_code', 'height', 'weight', 'BMI', 'NMDAS', "Patient_type", "Phenotype", "Diabetes", "heteroplasmy", "Timepoint", 'Timepoint_code')
-
-#rename biom samples names for the metadata
-#new_names <- c("MIDLOC06T24")
-#MIDLOC06T24_biomdata$samples <- new_names
-
 #create an otu_table to check the counts
 otu_table <- as.matrix(MIDLOC_biomdata$counts)
 
