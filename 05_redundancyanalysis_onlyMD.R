@@ -112,7 +112,7 @@ for (var in variables_RDA) {
   
   # Extract p-value from anova
   set.seed(1)
-  a <- anova(model, permutations = 99999)
+  a <- anova(model, permutations = 9999)
   pval <- a$`Pr(>F)`[1]
   
   # Add to results
