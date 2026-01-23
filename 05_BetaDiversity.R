@@ -30,13 +30,11 @@ MIDLOC_microbiomedata$counts <- features_table_norm
 MIDLOCMicrobiome_PCoaplot<- bdiv_ord_plot(MIDLOC_microbiomedata, bdiv = "Bray-Curtis", ord = "PCoA", stat.by = "group", layers = "peta", unc = "drop", rank = -2)
 MIDLOCMicrobiome_PCoaplot
 
-#Adding the centroids to the plot
-ord_results <- MIDLOCMicrobiome_PCoaplot$data
-centroids <- ord_results %>%
-  group_by(MIDLOC_microbiomedata$metadata$group) %>%
-  summarise(
-    PC1 = mean(.x),
-    PC2 = mean(.y))
+#PCoA with vegan
+dist_matrix <- vegdist(t(otu_table), method = "bray")
+pcoa_results_vegdist <- cmdscale(dist_matrix, k=3)
+pcoa_results_vegdist_eigenvalue <- cmdscale(dist_matrix, k=2, eig = TRUE)
+pcoa_df_vegdist <- data.frame(PCoA1 = pcoa_results_vegdist[,1], PCoA2 = pcoa_results_vegdist[,2], PCoA3 = pcoa_results_vegdist[,3], eigenvalues = pcoa_results_vegdist_eigenvalue$eig, SampleID = rownames(pcoa_results_vegdist), SampleGroup = sample_data(MIDLOC_microbiomedata$metadata))
 
 #adding the centroids of all pcoa
 centroids <- pcoa_df_vegdist %>%
@@ -45,13 +43,6 @@ centroids <- pcoa_df_vegdist %>%
     PC1 = mean(PCoA1),
     PC2 = mean(PCoA2),
     PC3 = mean(PCoA3))
-
-
-#PCoA with vegan
-dist_matrix <- vegdist(t(otu_table), method = "bray")
-pcoa_results_vegdist <- cmdscale(dist_matrix, k=3)
-pcoa_results_vegdist_eigenvalue <- cmdscale(dist_matrix, k=2, eig = TRUE)
-pcoa_df_vegdist <- data.frame(PCoA1 = pcoa_results_vegdist[,1], PCoA2 = pcoa_results_vegdist[,2], PCoA3 = pcoa_results_vegdist[,3], eigenvalues = pcoa_results_vegdist_eigenvalue$eig, SampleID = rownames(pcoa_results_vegdist), SampleGroup = sample_data(MIDLOC_microbiomedata$metadata))
 
 #eigenvalues and percentage of variance
 eigenvalues <- pcoa_df_vegdist$eigenvalues
