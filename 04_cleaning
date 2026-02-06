@@ -7,7 +7,7 @@ library(tidyverse)
 library(dplyr)
 
 # setting library paths
-MIDLOC_pathabundancepath <- /03_merged_MIDLOCpathabundancetable.tsv"
+MIDLOC_pathabundancepath <- /03_merged_MIDLOCpathabundancetable.biom"
 
 # import biom file into R
 MIDLOC_microbiomdata_pathabundance <- as_rbiom(MIDLOC_pathabundancepath)
