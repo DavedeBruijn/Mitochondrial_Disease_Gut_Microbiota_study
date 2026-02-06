@@ -29,6 +29,7 @@ MIDLOC_biomdata
 #add metadata to R
 metadata<-readr::read_tsv(MIDLOC_metadatapath)
 print(metadata)
+
 #create an otu_table to check the counts
 otu_table <- as.matrix(MIDLOC_biomdata$counts)
 
