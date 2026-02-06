@@ -1,0 +1,68 @@
+#loading r packages
+library(rbiom)
+library(phyloseq)
+library(vegan)
+library(dplyr)
+
+# setting library paths
+MIDLOCmicrobioom_biompath <- "/04_cleaned_MIDLOC.biom"
+
+# import biom file into R
+MIDLOCMicrobioom_biomdata <- as_rbiom(MIDLOCmicrobioom_biompath)
+MIDLOCMicrobioom_biomdata
+
+#create an otu_table 
+otu_table <- as.matrix(MIDLOCMicrobioom_biomdata$counts)
+
+#create an taxmap
+taxmap <- taxa_map(MIDLOCMicrobioom_biomdata, unc = "asis")
+
+#count the number of different taxa per rank
+ranks <- c("Kingdom", "Phylum", "Class", "Order", "Family", "Genus", "Species", ".otu")
+
+rank_counts_diff <- sapply(ranks, function(rank) {
+  vals <- taxmap[[rank]]
+  vals <- vals[vals != ""]
+  length(unique(vals))
+})
+
+rank_counts_diff
+
+#count the number of different taxa abundant in our data
+nnz <- function (x) sum(x > 0)
+percentage_rank_diff <- sapply(ranks, function(rank){
+  (sample_apply(MIDLOCMicrobioom_biomdata, nnz, rank)/rank_counts_diff[rank])*100
+})
+mean <- colMeans(percentage_rank_diff)
+percentage_rank_diff <- rbind(percentage_rank_diff, mean)
+
+#count the number of taxa per rank with unassigned
+rank_counts_all <- sapply(ranks, function(rank) {
+  vals <- taxmap[[rank]]
+  vals <- vals[vals != ""]
+  length(vals)
+})
+
+rank_counts_all
+
+#count the number of taxa abundant in our data
+nnz <- function (x) sum(x > 0)
+percentage_rank_all <- sapply(ranks, function(rank){
+  (sample_apply(MIDLOCMicrobioom_biomdata, nnz, rank))})
+
+percentage_rank_all
+
+#total percentage per rank
+rankstat <- sapply(taxmap[ranks], function(x) sum(x !=""))
+percentage <- (rankstat/5879)*100
+rankstat <- rbind(rankstat, percentage)
+
+#taxa_stack
+taxa_stacked(MIDLOCMicrobioom_biomdata, rank = "Phylum", order.by = ".sample", facet.by = "type")
+
+#taxa_stats
+taxa_table <- taxa_table(MIDLOCMicrobioom_biomdata, rank = "phylum", transform = "percent")
+taxa_stats(MIDLOCMicrobioom_biomdata, rank = 2, stat.by = "type", test = "wilcox", transform = "percent")
+taxa_boxplot(MIDLOCMicrobioom_biomdata, rank = "phylum", stat.by = "type", transform = "percent", y.transform = "none", taxa = 6)
+taxa_boxplot(MIDLOCMicrobioom_biomdata, rank = "class", stat.by = "type", unc = "drop", transform = "percent")
+taxa_boxplot(MIDLOCMicrobioom_biomdata, rank = "genus", stat.by = "type", unc = "drop", transform = "percent")
