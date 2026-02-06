@@ -1,0 +1,77 @@
+#Loading packages
+library(rbiom)
+library(phyloseq)
+library(readr)
+library(janitor)
+library(tidyverse)
+library(dplyr)
+
+# setting library paths
+MIDLOC_microbiompath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/03_merged/03_merged_microbiome.biom"
+MIDLOC_genefamiliespath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/read_annotation/merged_genefamilies.tsv"
+MIDLOC_pathabundancepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/read_annotation/merged_pathabundance.tsv"
+MIDLOC_pathcoveragepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/read_annotation/merged_pathcoverage.tsv"
+MIDLOC_metaphlan_tables <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/read_annotation/merged_metaphlan_tables.tsv"
+
+# import biom file into R
+MIDLOC_microbiomdata <- as_rbiom(MIDLOC_microbiompath)
+MIDLOC_microbiomdata
+
+#looking at the data types
+glimpse(MIDLOC_microbiomdata$metadata)
+glimpse(MIDLOC_microbiomdata$taxonomy)
+
+#cleaning the taxonomy table by removing unnecessary characters (If you want to work with NA)
+#could also use the function taxa_map inside rbiom, which automaticly cleans it (If you want to replace the NA with unc)
+MIDLOC_microbiomdata$taxonomy <- MIDLOC_microbiomdata$taxonomy %>% 
+  mutate(across(-1, ~str_remove(., "^.\\_\\_")))
+View(MIDLOC_microbiomdata$taxonomy)
+
+#filtering out the archea
+unique(MIDLOC_microbiomdata$taxonomy$Kingdom)
+features_table <- MIDLOC_microbiomdata$counts
+class(features_table)
+
+rows_to_keep <- MIDLOC_microbiomdata$taxonomy$Kingdom == "Bacteria"
+features_table <- features_table[rows_to_keep,] 
+MIDLOC_microbiomdata$counts <- features_table
+unique(MIDLOC_microbiomdata$taxonomy$Kingdom)
+
+#check the otu_table 
+otu_table <- as.matrix(MIDLOC_microbiomdata$counts)
+colSums(otu_table)
+View(otu_table)
+
+
+#renaming the column names
+MIDLOC_microbiomdata$samples[31:150]<- paste0("MIDLOC", 33:152)
+MIDLOC_microbiomdata$samples
+
+withoutT0 <- sub("T0$", "", MIDLOC_microbiomdata$samples[1:30])
+MIDLOC_microbiomdata$samples[1:30] <- withoutT0
+
+#adding metadata (can be placed here until better position)
+MIDLOC_metadatapath <- "/metadata.tsv"
+#add metadata to R
+metadata<-readr::read_tsv(MIDLOC_metadatapath)
+print(metadata)
+
+#could also rename if there are a lot of columns (sample is the name of the first column)
+metadata <- rename(metadata, .sample = sample)
+
+#add metadata to the biom file
+MIDLOC_microbiomdata$metadata <- metadata
+MIDLOC_microbiomdata
+
+#cleaning with janitor
+clean_metadata <- janitor::clean_names(MIDLOC_microbiomdata$metadata)
+colnames(clean_metadata) <- gsub("^pat_", "", colnames(clean_metadata))
+clean_metadata <- rename(clean_metadata, .sample = sample)
+View(clean_metadata)
+
+#adding the metadate back towards the biom file
+MIDLOC_microbiomdata$metadata <- clean_metadata
+
+#save rbiom object to a file
+MIDLOC_biomdata_savepath <- "/04_cleaned_MIDLOC.biom"
+write_biom(MIDLOC_microbiomdata, MIDLOC_biomdata_savepath)
