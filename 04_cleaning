@@ -61,6 +61,6 @@ View(clean_metadata)
 MIDLOC_microbiomdata_pathabundance$metadata <- clean_metadata
 
 #save rbiom object to a file 
-MIDLOC_biomdata_savepath <- "/04_cleaned_MIDLOCpathabundancetable.tsv"
+MIDLOC_biomdata_savepath <- "/04_cleaned_MIDLOCpathabundancetable.biom"
 write_biom(MIDLOC_microbiomdata_pathabundance, MIDLOC_biomdata_savepath)
 
