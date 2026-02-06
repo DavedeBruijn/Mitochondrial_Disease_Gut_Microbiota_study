@@ -1,0 +1,126 @@
+#Loading packages
+library(phyloseq)
+library(vegan)
+library(dplyr)
+library(rbiom)
+library(data.table)
+
+# setting library paths
+MIDLOCMicrobiome_biompath <- "/04_cleaned_MIDLOC.biom"
+
+# import biom file into R
+MIDLOCMicrobiome_biomdata <- as_rbiom(MIDLOCMicrobiome_biompath)
+MIDLOCMicrobiome_biomdata
+
+#changing type to group
+names(MIDLOCMicrobiome_biomdata$metadata)[2] <- "CONTRAST_Group"
+
+#normalize by the root since certain count are removed
+library(slam)
+features_table <- MIDLOCMicrobiome_biomdata$counts
+col_sums <- col_sums(features_table)
+features_table_norm <- features_table
+features_table_norm$v <- features_table_norm$v/col_sums[features_table$j]
+col_sums(features_table_norm)
+MIDLOCMicrobiome_biomdata$counts <- features_table_norm
+
+#creating an otu_table
+otu_table <- as.matrix(MIDLOCMicrobiome_biomdata$counts)
+colSums(otu_table)
+
+#creating a compositionalplot with OmicFlow
+library(OmicFlow)
+metadata <- as.data.table(MIDLOCMicrobiome_biomdata$metadata)
+countData <- as.matrix(MIDLOCMicrobiome_biomdata$counts)
+featureData <- as.data.frame(MIDLOCMicrobiome_biomdata$taxonomy)
+
+colnames(metadata)[1]<- "SAMPLE_ID"
+colnames(featureData)[1] <- "FEATURE_ID"
+
+metadata[, CONTRAST_Total := "total"]
+MIDLOCMicrobiome_biomdata$metadata <- metadata
+
+metadata$CONTRAST_Group <- as.character(metadata$CONTRAST_Group)
+metadata$CONTRAST_Total <- as.character(metadata$CONTRAST_Total)
+
+taxa <- metagenomics$new(
+  metaData = metadata,
+  countData = countData,
+  featureData = featureData
+)
+
+composition_article <- taxa$composition(
+  feature_rank = "Genus",
+  feature_top = 8,
+  normalize = FALSE,
+  col_name = "CONTRAST_Group"
+)
+
+composition_plot(
+  data = composition_article$data,
+  palette = composition$palette,
+  feature_rank = "Genus",
+  group_by = "CONTRAST_Group"
+)
+
+View(composition_article$data)
+composition_data <- as.data.frame(composition_article$data)
+
+composition_data_MD <- subset(composition_data, composition_data$CONTRAST_Group == "MD")
+
+mean_composition_MD <- composition_data_MD %>%
+  group_by(composition_data_MD$Genus) %>%
+  summarise(
+    mean_abun = mean(value))
+View(mean_composition_MD)
+mean_composition_MD$mean_rel_abun <- (mean_composition_MD$mean_abun/sum(mean_composition_MD$mean_abun))*100
+
+composition_data_Control <- subset(composition_data, composition_data$CONTRAST_Group == "Control")
+
+mean_composition_Control <- composition_data_Control %>%
+  group_by(composition_data_Control$Genus) %>%
+  summarise(
+    mean_abun = mean(value))
+View(mean_composition_Control)
+mean_composition_Control$mean_rel_abun <- (mean_composition_Control$mean_abun/sum(mean_composition_Control$mean_abun))*100
+
+composition_data_T1D <- subset(composition_data, composition_data$CONTRAST_Group == "T1D")
+
+mean_composition_T1D <- composition_data_T1D %>%
+  group_by(composition_data_T1D$Genus) %>%
+  summarise(
+    mean_abun = mean(value))
+View(mean_composition_T1D)
+mean_composition_T1D$mean_rel_abun <- (mean_composition_T1D$mean_abun/sum(mean_composition_T1D$mean_abun))*100
+
+mean_composition <- as.data.frame(mean_composition_MD$`composition_data_MD$Genus`)
+colnames(mean_composition) <- "Genus"
+mean_composition$rel_abun_Control <- mean_composition_Control$mean_rel_abun
+mean_composition$rel_abun_MD <- mean_composition_MD$mean_rel_abun
+mean_composition$rel_abun_T1D <- mean_composition_T1D$mean_rel_abun
+
+#composition total
+composition_test <- taxa$composition(
+  feature_rank = "Genus",
+  feature_top = 15,
+  normalize = FALSE,
+  col_name = "CONTRAST_Total"
+)
+
+composition_plot(
+  data = composition_test$data, 
+  palette = composition_test$palette,
+  feature_rank = "Genus",
+  group_by = "CONTRAST_Total"
+)
+
+View(composition_test$data)
+
+composition_total <- composition_test$data
+mean_composition_total <- composition_total %>%
+  group_by(composition_total$Genus) %>%
+  summarise(
+    mean_abun = mean(value))
+View(mean_composition_total)
+mean_composition_total$mean_rel_abun <- (mean_composition_total$mean_abun/sum(mean_composition_total$mean_abun))*100
+
