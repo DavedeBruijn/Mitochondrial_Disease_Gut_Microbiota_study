@@ -1,0 +1,79 @@
+##
+Similar Rscripts were used for the Healthy controls and type 1 diabetes data.
+##
+
+#Loading packages
+library(phyloseq)
+library(readr)
+library(rbiom)
+
+# setting library paths
+MIDLOC_biompath <- "/metaphlan_with_taxonomy.biom"
+#MIDLOC_metadatapath <- "/metadata_MD_complete.tsv"
+MIDLOC_genefamiliespath <- "/merged_genefamilies.tsv"
+MIDLOC_pathabundancepath <- "/merged_pathabundance.tsv"
+MIDLOC_pathcoveragepath <- "/merged_pathcoverage.tsv"
+MIDLOC_metaphlan_tables <- "/merged_metaphlan_tables.tsv"
+
+# import biom file into R (Rbiom(2.0.13 is needed to load the file))
+MIDLOC_biomdata <- as_rbiom(MIDLOC_biompath)
+MIDLOC_biomdata
+MIDLOC_biomdata_savepath <- "/biom_with_taxonomy.biom"
+write_biom(MIDLOC_biomdata, MIDLOC_biomdata_savepath)
+
+#loading the file with the updated version of rbiom (Rbiom(2.2.2 is needed for the rest of the analysis)
+MIDLOC_biompathloaded <- "/biom_with_taxonomy.biom"
+MIDLOC_biomdata <- as_rbiom(MIDLOC_biompathloaded)
+MIDLOC_biomdata
+
+#add metadata to R
+metadata<-readr::read_tsv(MIDLOC_metadatapath)
+print(metadata)
+
+#create an otu_table to check the counts
+otu_table <- as.matrix(MIDLOC_biomdata$counts)
+
+#could also rename if there are a lot of columns (sample is the name of the first column)
+metadata <- rename(metadata, .sample = sample)
+
+#add metadata to the biom file
+MIDLOC_biomdata$metadata <- metadata
+MIDLOC_biomdata
+
+#add genefamilies + path abundance + path coverage into R
+genefamiliestable <- readr::read_tsv(MIDLOC_genefamiliespath)
+View(genefamiliestable)
+pathabundancetable <- readr::read_tsv(MIDLOC_pathabundancepath)
+View(pathabundancetable)
+pathcoveragetable <- readr::read_tsv(MIDLOC_pathcoveragepath)
+View(pathcoveragetable)
+metaphlan_tables <- data.table::fread(MIDLOC_metaphlan_tables)
+View(metaphlan_tables)
+
+#save rbiom object to a file
+MIDLOC_biomdata_savepath <- "/01_loaded/01_loaded_MIDLOC_lifeline.biom"
+write_biom(MIDLOC_biomdata, MIDLOC_biomdata_savepath)
+
+#save tsv object to a file
+genefamiliestable_savepath <- "/01_loaded_MIDLOCgenefamiliestable_lifeline.tsv"
+pathabundancetable_savepath <- "/01_loaded_MIDLOCpathabundancetable_lifeline.tsv"
+pathcoveragetable_savepath <- "/01_loaded_MIDLOCpathcoveragetable_lifeline.tsv"
+metaphlan_tables_savepath <- "/01_loaded_MIDLOCmetaphlan_tables_lifeline.tsv"
+
+write_tsv(genefamiliestable, genefamiliestable_savepath)
+write_tsv(pathabundancetable, pathabundancetable_savepath)
+write_tsv(pathcoveragetable, pathcoveragetable_savepath)
+write_tsv(metaphlan_tables, metaphlan_tables_savepath)
+
+# check the distribution
+hist(otu_table, ylim = range(0, 1000))
+log_otu_table <- log10(otu_table + 1e-5)
+hist(log_otu_table, ylim = range(0, 25000))
+
+
+hist_pathabundance <-tibble::column_to_rownames(pathabundancetable, var = "# Pathway")
+hist_pathabundance <- as.matrix(hist_pathabundance)
+hist(hist_pathabundance, breaks = 30, ylim = range(0,100))
+
+log_pathabundance <- log10(hist_pathabundance + 1e-5)
+hist(log_pathabundance)
