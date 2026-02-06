@@ -7,11 +7,7 @@ library(tidyverse)
 library(dplyr)
 
 # setting library paths
-MIDLOC_microbiompath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/03_merged/03_merged_microbiome.biom"
-MIDLOC_genefamiliespath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/read_annotation/merged_genefamilies.tsv"
-MIDLOC_pathabundancepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/read_annotation/merged_pathabundance.tsv"
-MIDLOC_pathcoveragepath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/read_annotation/merged_pathcoverage.tsv"
-MIDLOC_metaphlan_tables <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Lifelines data/read_annotation/merged_metaphlan_tables.tsv"
+MIDLOC_microbiompath <- "/03_merged_microbiome.biom"
 
 # import biom file into R
 MIDLOC_microbiomdata <- as_rbiom(MIDLOC_microbiompath)
