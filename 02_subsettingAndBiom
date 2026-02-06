@@ -1,0 +1,74 @@
+##
+Similar Rscripts were used for the Healthy controls and type 1 diabetes data.
+##
+
+#Loading packages
+library(phyloseq)
+library(readr)
+library("dplyr")
+library(rbiom)
+library(tibble)
+
+# setting library paths
+MIDLOCMicrobiome_pathabundance_biompath <- "/01_loaded_MIDLOCpathabundancetable_MD.tsv"
+
+#import tsv files
+pathabundancetable_Microbiome <- readr::read_tsv(MIDLOCMicrobiome_pathabundance_biompath)
+View(pathabundancetable_Microbiome)
+
+#taxonomy table
+pathabundance_taxtable <- function(pathabundancetable_Microbiome) {
+  pathway <- sub("\\|.*", "", pathabundancetable_Microbiome)
+  
+  genus <- sub(".*\\|g__([^\\.]+).*", "\\1", pathabundancetable_Microbiome)
+  genus[!grepl("\\|", pathabundancetable_Microbiome)] <- ""
+  
+  species <- sub(".*\\.s__(.*)$", "\\1", pathabundancetable_Microbiome)
+  species[!grepl("\\.s__", pathabundancetable_Microbiome)] <- ""
+  
+  tax_df <- data.frame(
+    pathway = pathway,
+    genus = genus,
+    species = species,
+    stringsAsFactors = FALSE
+  )
+  
+  return(tax_df)
+}
+pathabundance_taxonomytable <- pathabundance_taxtable(pathabundancetable_Microbiome$`# Pathway`)
+#convert to a matrix
+pathabundancetable_Microbiome <- pathabundancetable_Microbiome %>% column_to_rownames(var = "# Pathway") %>% as.matrix()
+View(pathabundancetable_Microbiome)
+
+#convert to a biom file
+MIDLOC_pathabundance_biom <- as_rbiom(pathabundancetable_Microbiome)
+
+#check OTU table
+otu_table <- as.matrix(MIDLOC_pathabundance_biom$counts)
+
+#add taxonomy table
+rownames(pathabundance_taxonomytable) <- rownames(pathabundancetable_Microbiome)
+MIDLOC_pathabundance_biom$taxonomy <- pathabundance_taxonomytable
+MIDLOC_pathabundance_biom
+
+#Import metadata for subsetting
+metadatasubsetting_path <- "/metadata.tsv"
+metadatasubsetting <- readr::read_tsv(metadatasubsetting_path)
+metadatasubsetting <- rename(metadatasubsetting, .sample = sample)
+metadatasubsetting$...2 <- NULL
+
+#removing the _abundance so that the samples could be linked
+without_Abundance <- sub("_Abundance$", "", MIDLOC_pathabundance_biom$samples)
+MIDLOC_pathabundance_biom$samples <- without_Abundance
+
+#adding the metadata
+MIDLOC_pathabundance_biom$metadata <- metadatasubsetting
+
+#subsetting to samples only used for MIDLOC diet analysis
+MIDLOC_pathabundance_biom <- subset(MIDLOC_pathabundance_biom, MIDLOC_pathabundance_biom$metadata$Week %in% 0)
+MIDLOC_pathabundance_biom
+View(MIDLOC_pathabundance_biom$metadata)
+
+#save rbiom object to a file
+MIDLOCMicrobiome_biom_pathabundance_savepath <- 
+write_biom(MIDLOC_pathabundance_biom, MIDLOCMicrobiome_biom_pathabundance_savepath)
