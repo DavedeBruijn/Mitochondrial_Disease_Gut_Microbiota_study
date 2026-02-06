@@ -52,6 +52,6 @@ View(MIDLOC_biomdata_lifeline$taxonomy)
 View(MIDLOC_biomdata_T1D$taxonomy)
 
 #save rbiom object to a file
-MIDLOCMicrobiomesavepath <- /03_merged_MIDLOCpathabundancetable.tsv"
+MIDLOCMicrobiomesavepath <- "/03_merged_MIDLOCpathabundancetable.tsv"
 write_biom(MIDLOC_microbiomedata, MIDLOCMicrobiomesavepath)
 
