@@ -70,5 +70,5 @@ MIDLOC_pathabundance_biom
 View(MIDLOC_pathabundance_biom$metadata)
 
 #save rbiom object to a file
-MIDLOCMicrobiome_biom_pathabundance_savepath <- 
+MIDLOCMicrobiome_biom_pathabundance_savepath <-  "/02_subsetAndBiom_MIDLOCpathabundancetable_MD.tsv"
 write_biom(MIDLOC_pathabundance_biom, MIDLOCMicrobiome_biom_pathabundance_savepath)
