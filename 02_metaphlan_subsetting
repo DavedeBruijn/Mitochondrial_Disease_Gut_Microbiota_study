@@ -1,0 +1,37 @@
+##
+Similar Rscripts were used for the Healthy controls and type 1 diabetes data.
+##
+
+#Loading packages
+library("biomformat")
+library(rbiom)
+
+#adding metaphlan to the MD data and subset
+# setting library paths MD data
+MIDLOC_biompath_MD <- "01_loaded_MIDLOC.biom"
+MIDLOC_metaphlan_tables_MDpath <- "01_loaded_MIDLOCmetaphlan_tables.tsv"
+
+# import biom files into R
+MIDLOC_biomdata_MD <- as_rbiom(MIDLOC_biompath_MD)
+MIDLOC_biomdata_MD
+
+#adding otu names towards the otu's
+#import tsv files
+MIDLOC_metaphlan_tables_MD <- data.table::fread(MIDLOC_metaphlan_tables_MDpath)
+View(MIDLOC_metaphlan_tables_MD)
+
+#change the otu_1 numbering towards the otu names
+MIDLOC_biomdata_MD$otus <- MIDLOC_metaphlan_tables_MD$V1
+otu_table_MD <- as.matrix(MIDLOC_biomdata_MD$counts)
+View(otu_table_MD)
+
+#subsetting to sample only used for the MIDLOC microbiome analysis
+metadata <- MIDLOC_biomdata_MD$metadata
+T0_samples <- metadata$.sample[grepl('T0$', metadata$.sample)]
+MIDLOC_biomdata_MD_subset <- subset(MIDLOC_biomdata_MD, MIDLOC_biomdata_MD$metadata$.sample %in% T0_samples)
+MIDLOC_biomdata_MD_subset
+
+#save rbiom object to a file
+MIDLOCMicrobiome_MD_savepath <- "/02_metaphlan_subset_MD.biom"
+write_biom(MIDLOC_biomdata_MD_subset, MIDLOCMicrobiome_MD_savepath)
+
