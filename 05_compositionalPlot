@@ -116,11 +116,13 @@ composition_plot(
 
 View(composition_test$data)
 
+
 composition_total <- composition_test$data
+composition_total$rel_abun <- (composition_total$value/(sum(composition_total$value)/150))*100
 mean_composition_total <- composition_total %>%
   group_by(composition_total$Genus) %>%
   summarise(
-    mean_abun = mean(value))
+    mean_abun = mean(rel_abun),
+    sd_abun = sd(rel_abun))
 View(mean_composition_total)
-mean_composition_total$mean_rel_abun <- (mean_composition_total$mean_abun/sum(mean_composition_total$mean_abun))*100
 
