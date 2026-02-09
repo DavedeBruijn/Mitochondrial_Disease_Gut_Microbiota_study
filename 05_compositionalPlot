@@ -58,7 +58,7 @@ composition_article <- taxa$composition(
 
 composition_plot(
   data = composition_article$data,
-  palette = composition$palette,
+  palette = composition_article$palette,
   feature_rank = "Genus",
   group_by = "CONTRAST_Group"
 )
