@@ -13,7 +13,7 @@ library(cowplot)
 library(slam)
 
 # setting library paths
-MIDLOCMicrobiome_biompath <- "/04_cleaned_MIDLOC.biom"
+MIDLOCMicrobiome_biompath <- "C:/Users/Z141231/OneDrive - Radboudumc/Rdata/Microbiome data/04_cleaned/04_cleaned_MIDLOC.biom"
 
 # import biom file into R
 MIDLOCMicrobiome_biomdata <- as_rbiom(MIDLOCMicrobiome_biompath)
@@ -127,6 +127,7 @@ hline_df <- data.frame(yintercept = -log10(0.05), Label = "FDR = 0.05")
 DAA_genus_plot <- ggplot(volcanoplot_results, aes(x = Log2FC_1, y = log10_adj.pval, colour = Log2FC_1))+
   geom_point(alpha = 1, size = 1) +
   scale_color_gradient2(low = "blue", mid = "grey", high = "red", midpoint = 0) +
+  scale_x_continuous(limits = c(-10, 20))+
   theme_minimal()+
   labs(x = "log2 Fold Change(MD/Control)",
        y = "-log10(FDR)",
@@ -134,7 +135,7 @@ DAA_genus_plot <- ggplot(volcanoplot_results, aes(x = Log2FC_1, y = log10_adj.pv
        colour = "Fold Change",
        title = "Genus")+
   geom_hline(data = hline_df, aes(yintercept = yintercept), color = "blue", linetype = "dashed", linewidth = 0.5) +
-  annotate("text", x = -21, y = -log10(0.035), label = "FDR < 0.05", color = "black", size = 3)+
+  annotate("text", x = -9, y = -log10(0.035), label = "FDR < 0.05", color = "black", size = 3)+
   geom_vline(xintercept = 0, linetype = "dotted")+
   geom_point(data = top_hits, aes(color = Log2FC_1, size = rel_abun), alpha = 1)+
   scale_size_continuous(range = c(0.1, 4), trans = "log10",breaks = c(1, 0.1, 0.01, 0.001), labels = c("1", "0.1", "0.01", "0.001"))+
@@ -215,12 +216,14 @@ top_hits_species <- volcanoplot_results_species %>%
   filter(FDR_1 < 0.05) %>%
   arrange(FDR_1) 
 top_hits_species_noGGB <- top_hits_species[!grepl("^GGB", top_hits_species$.taxa), ]
+top_hits_species_noGGB <- top_hits_species_noGGB[1:20,]
 
 hline_df <- data.frame(yintercept = -log10(0.05), Label = "FDR = 0.05")
 
 DAA_species_plot <- ggplot(volcanoplot_results_species, aes(x = Log2FC_1, y = log10_adj.pval, colour = Log2FC_1))+
   geom_point(alpha = 1, size = 1) +
   scale_color_gradient2(low = "blue", mid = "grey", high = "red", midpoint = 0) +
+  scale_x_continuous(limits = c(-15, 20))+
   theme_minimal()+
   labs(x = "log2 Fold Change(MD/Control)",
        y = "-log10(FDR)",
@@ -228,7 +231,7 @@ DAA_species_plot <- ggplot(volcanoplot_results_species, aes(x = Log2FC_1, y = lo
        colour = "Fold Change",
        title = "Species")+
   geom_hline(data = hline_df, aes(yintercept = yintercept), color = "blue", linetype = "dashed", linewidth = 0.5) +
-  annotate("text", x = -21, y = -log10(0.035), label = "FDR < 0.05", color = "black", size = 3)+
+  annotate("text", x = -14, y = -log10(0.035), label = "FDR < 0.05", color = "black", size = 3)+
   geom_vline(xintercept = 0, linetype = "dotted")+
   geom_point(data = top_hits_species, aes(color = Log2FC_1, size = rel_abun), alpha = 1)+
   scale_size_continuous(range = c(0.1, 4), trans = "log10",breaks = c(1, 0.1, 0.01, 0.001), labels = c("1", "0.1", "0.01", "0.001"))+
@@ -269,6 +272,9 @@ genus_C_MD_article <- Diff_genus_table_C_MD[,-c(4,5,6,10, 13, 14,16)]
 names(genus_C_MD_article)[7] <- "Log2FC"
 names(genus_C_MD_article)[8] <- "Pvalue"
 names(genus_C_MD_article)[9] <- "FDR"
+genus_C_MD_article$.mean.diff <- genus_C_MD_article$.mean.diff*100
+genus_C_MD_article$.lower <- genus_C_MD_article$.lower*100
+genus_C_MD_article$.upper <- genus_C_MD_article$.upper*100
 
 #subsetting only the significant
 genus_C_MD_article <- genus_C_MD_article %>%
@@ -284,6 +290,9 @@ Species_C_MD_article <- Diff_species_table_C_MD[,-c(4,5,6,10, 13, 14,16)]
 names(Species_C_MD_article)[7] <- "Log2FC"
 names(Species_C_MD_article)[8] <- "Pvalue"
 names(Species_C_MD_article)[9] <- "FDR"
+Species_C_MD_article$.mean.diff <- Species_C_MD_article$.mean.diff*100
+Species_C_MD_article$.lower <- Species_C_MD_article$.lower*100
+Species_C_MD_article$.upper <- Species_C_MD_article$.upper*100
 
 #subsetting only the significant
 Species_C_MD_article <- Species_C_MD_article %>%
@@ -313,6 +322,9 @@ genus_T1D_MD_article <- Diff_genus_table_MD_T1D[,-c(4,5,6,10, 11, 12,15)]
 names(genus_T1D_MD_article)[7] <- "Log2FC"
 names(genus_T1D_MD_article)[8] <- "Pvalue"
 names(genus_T1D_MD_article)[9] <- "FDR"
+genus_T1D_MD_article$.mean.diff <- genus_T1D_MD_article$.mean.diff*100
+genus_T1D_MD_article$.lower <- genus_T1D_MD_article$.lower*100
+genus_T1D_MD_article$.upper <- genus_T1D_MD_article$.upper*100
 
 #subsetting only the significant
 genus_T1D_MD_article <- genus_T1D_MD_article %>%
@@ -328,9 +340,78 @@ Species_T1D_MD_article <- Diff_species_table_MD_T1D[,-c(4,5,6,10, 13, 14,15)]
 names(Species_T1D_MD_article)[7] <- "Log2FC"
 names(Species_T1D_MD_article)[8] <- "Pvalue"
 names(Species_T1D_MD_article)[9] <- "FDR"
+Species_T1D_MD_article$.mean.diff <- Species_T1D_MD_article$.mean.diff*100
+Species_T1D_MD_article$.lower <- Species_T1D_MD_article$.lower*100
+Species_T1D_MD_article$.upper <- Species_T1D_MD_article$.upper*100
 
 #subsetting only the significant
 Species_T1D_MD_article <- Species_T1D_MD_article %>%
   filter(FDR < 0.05) %>%
   arrange(FDR)
 View(Species_T1D_MD_article)
+
+#making boxplots of interesting taxa
+taxa_table_genus <- taxa_table(MIDLOCMicrobiome_biomdata, rank = -2, unc = "drop", taxa = 0.000000001)
+Sphingomonas_relabund <- subset(taxa_table_genus, .taxa %in% c("Bacteroides"))
+Sphingomonas_relabund$percentage <- Sphingomonas_relabund$.abundance*100
+
+
+Sphingomonas_plot <-ggplot(Sphingomonas_relabund, aes(x = group, y = percentage, color = group))+
+  geom_violin(fill = NA, linewidth = 1.2)+
+  geom_boxplot(width = 0.3, outlier.shape = NA, alpha = 0.8)+
+  geom_jitter(width = 0.1, size = 1.5, alpha = 0.75)+
+  theme_minimal()+
+  labs(y = "Relative Abundance (%)")+
+  ggtitle("Sphingomonas")
+Sphingomonas_plot <- Sphingomonas_plot + theme(legend.position = "none")
+Sphingomonas_plot
+
+taxa_stats(MIDLOCMicrobiome_biomdata, taxa = "Sphingomonas", stat.by = "group", rank = -2, test = "wilcox", unc = "asis")
+
+#Microbacterium
+Microbacterium_relabund <- subset(taxa_table_genus, .taxa %in% c("Microbacterium"))
+Microbacterium_relabund$percentage <- Microbacterium_relabund$.abundance*100
+
+
+Microbacterium_plot <-ggplot(Microbacterium_relabund, aes(x = group, y = percentage, color = group))+
+  geom_violin(fill = NA, linewidth = 1.2)+
+  geom_boxplot(width = 0.3, outlier.shape = NA, alpha = 0.8)+
+  geom_jitter(width = 0.1, size = 1.5, alpha = 0.75)+
+  theme_minimal()+
+  labs(y = "Relative Abundance (%)")+
+  ggtitle("Microbacterium")
+Microbacterium_plot <- Microbacterium_plot + theme(legend.position = "none")
+Microbacterium_plot
+
+#GGB9597
+GGB9597_relabund <- subset(taxa_table_genus, .taxa %in% c("GGB9597"))
+GGB9597_relabund$percentage <- GGB9597_relabund$.abundance*100
+
+
+GGB9597_plot <-ggplot(GGB9597_relabund, aes(x = group, y = percentage, color = group))+
+  geom_violin(fill = NA, linewidth = 1.2)+
+  geom_boxplot(width = 0.3, outlier.shape = NA, alpha = 0.8)+
+  geom_jitter(width = 0.1, size = 1.5, alpha = 0.75)+
+  theme_minimal()+
+  labs(y = "Relative Abundance (%)")+
+  ggtitle("GGB9597")
+GGB9597_plot <- GGB9597_plot + theme(legend.position = "none")
+GGB9597_plot
+
+#extra species plots
+#c("Microbacterium_sp_T32", "Enterocloster_aldenensis", "GGB3677_SGB4990", "Clostridium_sp_Marseille_P3244", "GGB3109_SGB4121", "GGB9301_SGB14262")
+species_relabund <- subset(species_table, .taxa %in% c("Bacteroides_uniformis"))
+species_relabund$percentage <- species_relabund$.abundance*100
+
+
+species_plot <-ggplot(species_relabund, aes(x = group, y = percentage, color = group))+
+  geom_violin(fill = NA, linewidth = 1.2)+
+  geom_boxplot(width = 0.3, outlier.shape = NA, alpha = 0.8)+
+  geom_jitter(width = 0.1, size = 1.5, alpha = 0.75)+
+  theme_minimal()+
+  labs(y = "Relative Abundance (%)")+
+  ggtitle("GGB9301_SGB14262")
+species_plot <- species_plot + theme(legend.position = "none")
+species_plot
+
+taxa_stats(MIDLOCMicrobiome_biomdata, taxa = "Sphingomonas", stat.by = "group", rank = -2, test = "wilcox", unc = "asis")
