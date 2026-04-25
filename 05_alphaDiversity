@@ -15,6 +15,7 @@ MIDLOCMicrobiome_biomdata
 names(MIDLOCMicrobiome_biomdata$metadata)[2] <- "group"
 
 #normalize by the root since certain count were removed
+library("slam")
 features_table <- MIDLOCMicrobiome_biomdata$counts
 col_sums <- col_sums(features_table)
 features_table_norm <- features_table
