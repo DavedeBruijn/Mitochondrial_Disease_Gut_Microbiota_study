@@ -1,0 +1,365 @@
+#Loading packages
+library(rbiom)
+library(phyloseq)
+library(vegan)
+library(dplyr)
+library(tidyr)
+library(data.table)
+
+# setting library paths
+MIDLOCMicrobiome_biompath <- "04_cleaned_MIDLOC.biom"
+
+# import biom file into R
+MIDLOC_microbiomedata <- as_rbiom(MIDLOCMicrobiome_biompath)
+MIDLOC_microbiomedata
+
+#create an otu_table 
+otu_table <- as.matrix(MIDLOC_microbiomedata$counts)
+View(otu_table)
+
+names(MIDLOC_microbiomedata$metadata)[2] <- "group"
+
+#normalize by the root since certain count were removed
+library(slam)
+features_table <- MIDLOC_microbiomedata$counts
+col_sums <- col_sums(features_table)
+features_table_norm <- features_table
+features_table_norm$v <- features_table_norm$v/col_sums[features_table$j]
+col_sums(features_table_norm)
+MIDLOC_microbiomedata$counts <- features_table_norm
+
+#adding metadata
+metadata <- MIDLOC_microbiomedata$metadata
+
+#subsetting to only people with MD
+MIDLOC_microbiomedata_MD <- subset(MIDLOC_microbiomedata, `group` %in% c('MD'))
+metadata_MD <- MIDLOC_microbiomedata_MD$metadata
+
+# Correlation analysis alpha diversity
+library(ggplot2)
+
+#making a corplot and cor test manually
+MIDLOC_microbiomedata_MD_shannon <- adiv_table(MIDLOC_microbiomedata_MD, adiv = "shannon")
+df <- data.frame(
+  Nmdas = MIDLOC_microbiomedata_MD$metadata$nmdas,
+  Adiv = MIDLOC_microbiomedata_MD_shannon$.diversity
+)
+
+# Create a raw scatter plot
+ggplot(df, aes(x = Nmdas, y = Adiv)) +
+  geom_point(size = 4, color = "red") + 
+  geom_smooth(method = "lm") +
+  labs(title = "Manual Check of Data Points")
+
+cor.test(df$Nmdas, df$Adiv, method = "spearman")
+
+
+library(corrplot)
+
+#looking at all the variables and alpha diversity
+cor_alpha_MD <- MIDLOC_microbiomedata_MD_shannon
+cor_alpha_MD <- cor_alpha_MD[, sapply(cor_alpha_MD, is.numeric)]
+cor_alpha_MD$.depth <- NULL
+cor_alpha_MD$sex_code <- NULL
+cor_alpha_MD$diabetes_code <- NULL
+cor_alpha_MD$probiotica <- NULL
+row.names(cor_alpha_MD) <- metadata_MD$.sample
+
+cor_matrix_alpha <- cor(cor_alpha_MD, method = "spearman", use = "pairwise.complete.obs")
+res_sig <- cor.mtest(cor_alpha_MD, conf.level = 0.95, method = "spearman")
+
+Alpha_correlation_table <- data.frame(
+  row.names = row.names(cor_matrix_alpha),
+  correlation = cor_matrix_alpha[,".diversity"],
+  p_value = res_sig$p[, ".diversity"]
+)
+
+Alpha_correlation_table$FDR <- p.adjust(Alpha_correlation_table$p_value, method = "fdr")
+
+
+# making a species table
+long_df <- taxa_table(MIDLOC_microbiomedata_MD, rank = "Species", unc = "drop", taxa = 0.00000001)
+
+# Pivot to wide format
+cor_species <- long_df %>%
+  select(.sample, .taxa, .abundance) %>%
+  pivot_wider(names_from = .taxa, values_from = .abundance)
+
+# Convert to data frame and set row names
+cor_species <- as.data.frame(cor_species)
+rownames(cor_species) <- cor_species$.sample
+cor_species$.sample <- NULL
+
+# creating a data.frame with all the numerical data
+cor_metadata_MD <- metadata_MD
+cor_metadata_MD <- cor_metadata_MD[, sapply(cor_metadata_MD, is.numeric)]
+cor_metadata_MD$sex_code <- NULL
+cor_metadata_MD$diabetes_code <- NULL
+cor_metadata_MD$probiotica <- NULL
+row.names(cor_metadata_MD) <- metadata_MD$.sample
+
+# Calculate matrix
+cor_matrix <- cor(cor_species, cor_metadata_MD, method = "spearman", use = "pairwise.complete.obs")
+
+#saving it as csv file
+write.csv(cor_matrix, "cor_matrix_microbial.csv")
+
+#calculate significance
+combined_data <- cbind(cor_species, cor_metadata_MD)
+res_sig <- cor.mtest(combined_data, conf.level = 0.95, method = "spearman")
+
+# Using only the variables as columns for the correlation
+taxa_names <- colnames(cor_species)
+meta_names <- colnames(cor_metadata_MD)
+
+p_raw_rect <- res_sig$p[taxa_names, meta_names]
+
+#saving it as csv file
+write.csv(p_raw_rect, "cor_p-values_microbial.csv")
+
+#calculating the adjusted p-value
+p_rect_adj <- matrix(NA, nrow = length(taxa_names), ncol = length(meta_names))
+rownames(p_rect_adj) <- taxa_names
+colnames(p_rect_adj) <- meta_names
+
+# Loop through each metadata variable and adjust p-values independently
+for (m_col in meta_names) {
+  
+  # Extract raw p-values for all taxa against this one metadata column
+  raw_p_col <- res_sig$p[taxa_names, m_col]
+  
+  # Apply FDR (Benjamini-Hochberg) to just this vector
+  adj_p_col <- p.adjust(raw_p_col, method = "fdr")
+  
+  # Put them back into our rectangular matrix
+  p_rect_adj[, m_col] <- adj_p_col
+}
+
+#saving it as csv file
+write.csv(p_rect_adj, "cor_FDR_microbial.csv")
+
+
+# Create the plot
+corrplot(cor_rect, 
+         method = "color", 
+         p.mat = p_raw_rect,
+         sig.level = 0.05, 
+         insig = "blank", 
+         tl.col = "black", 
+         tl.srt = 45, 
+         tl.cex = 0.7)
+
+#for adjusted p-value
+corrplot(cor_rect, 
+         method = "color", 
+         p.mat = p_rect_adj,
+         sig.level = 0.05, 
+         insig = "blank", 
+         tl.col = "black", 
+         tl.srt = 45, 
+         tl.cex = 0.7)
+
+# Correlation between NMDAS and the relevant species
+Ruminococcus_torques <- "Ruminococcus_torques"
+Bacteroides_uniformis <- "Bacteroides_uniformis"
+Ruminococcus_gnavus <- "Ruminococcus_gnavus"
+Escherichia_coli <- "Escherichia_coli"
+nmdas  <- "nmdas"
+
+# Extract the vectors
+y_Ruminococcus_torques <- cor_species[[Ruminococcus_torques]]
+y_Bacteroides_uniformis <- cor_species[[Bacteroides_uniformis]]
+y_Ruminococcus_gnavus <- cor_species[[Ruminococcus_gnavus]]
+y_Escherichia_coli <- cor_species[[Escherichia_coli]]
+x_nmdas <- metadata_MD[[nmdas]]
+
+# Create a plotting data frame
+corplot_species <- data.frame(Metadata = x_nmdas, Ruminococcus_torques_Abundance = y_Ruminococcus_torques, Bacteroides_uniformis_Abundance = y_Bacteroides_uniformis, Ruminococcus_gnavus_Abundance = y_Ruminococcus_gnavus, Escherichia_coli_Abundance = y_Escherichia_coli)
+
+library(ggplot2)
+
+corplot_rumino_tor <- ggplot(corplot_species, aes(x = Metadata, y = Ruminococcus_torques_Abundance)) +
+  geom_point(color = "steelblue", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", color = "firebrick", se = TRUE) + # Regression line
+  labs(
+    title = paste("Correlation between", Ruminococcus_torques, "and", nmdas),
+    subtitle = paste("Spearman r =", round(cor(x_meta, y_Ruminococcus_torques, method = "spearman"), 3)),
+    x = target_meta,
+    y = "Relative Abundance"
+  ) +
+  theme_minimal()
+corplot_rumino_tor
+cor.test(corplot_species$Metadata ,corplot_species$Ruminococcus_torques_Abundance , method = "spearman")
+
+corplot_bact_unf <- ggplot(corplot_species, aes(x = Metadata, y = Bacteroides_uniformis_Abundance)) +
+  geom_point(color = "steelblue", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", color = "firebrick", se = TRUE) + # Regression line
+  labs(
+    title = paste("Correlation between", Bacteroides_uniformis, "and", nmdas),
+    subtitle = paste("Spearman r =", round(cor(x_meta, y_Bacteroides_uniformis, method = "spearman"), 3)),
+    x = target_meta,
+    y = "Relative Abundance"
+  ) +
+  theme_minimal()
+corplot_bact_unf
+cor.test(corplot_species$Metadata ,corplot_species$Bacteroides_uniformis_Abundance , method = "spearman")
+
+corplot_rumino_gna <- ggplot(corplot_species, aes(x = Metadata, y = Ruminococcus_gnavus_Abundance)) +
+  geom_point(color = "steelblue", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", color = "firebrick", se = TRUE) + # Regression line
+  labs(
+    title = paste("Correlation between", Ruminococcus_gnavus, "and", nmdas),
+    subtitle = paste("Spearman r =", round(cor(x_meta, y_Ruminococcus_gnavus, method = "spearman"), 3)),
+    x = target_meta,
+    y = "Relative Abundance"
+  ) +
+  theme_minimal()
+corplot_rumino_gna
+cor.test(corplot_species$Metadata ,corplot_species$Ruminococcus_gnavus_Abundance , method = "spearman")
+
+
+corplot_e_coli <- ggplot(corplot_species, aes(x = Metadata, y = Escherichia_coli_Abundance)) +
+  geom_point(color = "steelblue", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", color = "firebrick", se = TRUE) + # Regression line
+  labs(
+    title = paste("Correlation between", Escherichia_coli, "and", nmdas),
+    subtitle = paste("Spearman r =", round(cor(x_meta, y_Escherichia_coli, method = "spearman"), 3)),
+    x = target_meta,
+    y = "Relative Abundance"
+  ) +
+  scale_y_log10(labels = scales::comma) +
+  theme_minimal()
+corplot_e_coli
+cor.test(corplot_species$Metadata ,corplot_species$Escherichia_coli_Abundance , method = "spearman")
+
+library(patchwork)
+corplots <- corplot_rumino_tor + corplot_bact_unf + corplot_rumino_gna + corplot_e_coli + plot_annotation(
+  tag_levels = "A"
+)
+corplots
+
+#getting the relative abundance in percentage
+row_sums(cor_species)
+cor_species_percentage <- (cor_species/row_sums(cor_species))*100
+row_sums(cor_species_percentage)
+
+#making a new correlation analysis
+# Calculate matrix
+cor_matrix_percentage <- cor(cor_species_percentage, cor_metadata_MD, method = "spearman", use = "pairwise.complete.obs")
+
+#calculate significance
+combined_data_percentage <- cbind(cor_species_percentage, cor_metadata_MD)
+res_sig_percentage <- cor.mtest(combined_data_percentage, conf.level = 0.95, method = "spearman")
+
+# Create an empty matrix to store adjusted p-values
+p_rect_adj_percentage <- matrix(NA, nrow = length(taxa_names), ncol = length(meta_names))
+rownames(p_rect_adj_percentage) <- taxa_names
+colnames(p_rect_adj_percentage) <- meta_names
+
+# Loop through each metadata variable and adjust p-values independently
+for (m_col in meta_names) {
+  
+  # Extract raw p-values for all taxa against this one metadata column
+  raw_p_col <- res_sig_percentage$p[taxa_names, m_col]
+  
+  # Apply FDR (Benjamini-Hochberg) to just this vector
+  adj_p_col <- p.adjust(raw_p_col, method = "fdr")
+  
+  # Put them back into our rectangular matrix
+  p_rect_adj_percentage[, m_col] <- adj_p_col
+}
+
+# adjust to only the variables
+cor_rect_percentage <- cor_matrix_percentage[taxa_names, meta_names]
+
+p_raw_rect_percentage <- res_sig_percentage$p[taxa_names, meta_names]
+
+# Create the plot
+corrplot(cor_rect_percentage, 
+         method = "color", 
+         p.mat = p_raw_rect_percentage,
+         sig.level = 0.05, 
+         insig = "blank", 
+         tl.col = "black", 
+         tl.srt = 45, 
+         tl.cex = 0.7)
+
+# Extract the vectors
+y_Ruminococcus_torques_per <- cor_species_percentage[[Ruminococcus_torques]]
+y_Bacteroides_uniformis_per <- cor_species_percentage[[Bacteroides_uniformis]]
+y_Ruminococcus_gnavus_per <- cor_species_percentage[[Ruminococcus_gnavus]]
+y_Escherichia_coli_per <- cor_species_percentage[[Escherichia_coli]]
+x_nmdas <- metadata_MD[[nmdas]]
+
+# Create a plotting data frame
+corplot_species_per <- data.frame(Metadata = x_nmdas, Ruminococcus_torques_Abundance = y_Ruminococcus_torques_per, Bacteroides_uniformis_Abundance = y_Bacteroides_uniformis_per, Ruminococcus_gnavus_Abundance = y_Ruminococcus_gnavus_per, Escherichia_coli_Abundance = y_Escherichia_coli_per)
+
+corplot_rumino_tor_per <- ggplot(corplot_species_per, aes(x = Metadata, y = Ruminococcus_torques_Abundance)) +
+  geom_point(color = "steelblue", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", color = "firebrick", se = TRUE) + # Regression line
+  labs(
+    title = paste("Correlation between", Ruminococcus_torques, "and", nmdas),
+    subtitle = paste("Spearman r =", round(cor(x_meta, y_Ruminococcus_torques_per, method = "spearman"), 3)),
+    x = target_meta,
+    y = "Relative Abundance (%)"
+  ) +
+  theme_minimal()
+corplot_rumino_tor_per
+cor.test(corplot_species_per$Metadata ,corplot_species_per$Ruminococcus_torques_Abundance , method = "spearman")
+
+corplot_bact_unf_per <- ggplot(corplot_species_per, aes(x = Metadata, y = Bacteroides_uniformis_Abundance)) +
+  geom_point(color = "steelblue", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", color = "firebrick", se = TRUE) + # Regression line
+  labs(
+    title = paste("Correlation between", Bacteroides_uniformis, "and", nmdas),
+    subtitle = paste("Spearman r =", round(cor(x_meta, y_Bacteroides_uniformis, method = "spearman"), 3)),
+    x = target_meta,
+    y = "Relative Abundance (%)"
+  ) +
+  theme_minimal()
+corplot_bact_unf_per
+cor.test(corplot_species_per$Metadata ,corplot_species_per$Bacteroides_uniformis_Abundance , method = "spearman")
+
+corplot_rumino_gna_per <- ggplot(corplot_species_per, aes(x = Metadata, y = Ruminococcus_gnavus_Abundance)) +
+  geom_point(color = "steelblue", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", color = "firebrick", se = TRUE) + # Regression line
+  labs(
+    title = paste("Correlation between", Ruminococcus_gnavus, "and", nmdas),
+    subtitle = paste("Spearman r =", round(cor(x_meta, y_Ruminococcus_gnavus, method = "spearman"), 3)),
+    x = target_meta,
+    y = "Relative Abundance (%)"
+  ) +
+  theme_minimal()
+corplot_rumino_gna_per
+cor.test(corplot_species_per$Metadata ,corplot_species_per$Ruminococcus_gnavus_Abundance , method = "spearman")
+
+
+corplot_e_coli_per <- ggplot(corplot_species_per, aes(x = Metadata, y = Escherichia_coli_Abundance)) +
+  geom_point(color = "steelblue", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", color = "firebrick", se = TRUE) + # Regression line
+  labs(
+    title = paste("Correlation between", Escherichia_coli, "and", nmdas),
+    subtitle = paste("Spearman r =", round(cor(x_meta, y_Escherichia_coli, method = "spearman"), 3)),
+    x = target_meta,
+    y = "Relative Abundance (%)"
+  ) +
+  scale_y_log10(
+    limits = c(1e-5, NA), 
+    breaks = c(1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1, 10),
+    labels = c("0", "0.0001", "0.001", "0.01", "0.1", "1", "10"),
+    expand = expansion(mult = c(0, 0.05))) +
+  theme_minimal()
+corplot_e_coli_per
+cor.test(corplot_species_per$Metadata ,corplot_species_per$Escherichia_coli_Abundance , method = "spearman")
+
+library(patchwork)
+corplots <- corplot_rumino_tor_per + corplot_bact_unf_per + corplot_rumino_gna_per + corplot_e_coli_per+
+  scale_y_log10(
+    limits = c(1e-5, NA), 
+    breaks = c(1e-5, 1e-4, 1e-3, 1e-2, 1e-1, 1, 10),
+    labels = c("0", "0.0001", "0.001", "0.01", "0.1", "1", "10"),
+    expand = expansion(mult = c(0, 0.05))) +
+  theme_minimal() + plot_annotation(
+  tag_levels = "A"
+)
+corplots
