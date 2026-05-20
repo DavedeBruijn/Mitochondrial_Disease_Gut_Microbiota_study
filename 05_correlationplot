@@ -1,0 +1,223 @@
+#Loading packages
+library(rbiom)
+library(phyloseq)
+library(vegan)
+library(dplyr)
+library(tidyr)
+library(data.table)
+library(corrplot)
+
+# setting library paths
+MIDLOCMicrobiome_biompath <- "04_cleaned_MIDLOC.biom"
+
+# import biom file into R
+MIDLOC_microbiomedata <- as_rbiom(MIDLOCMicrobiome_biompath)
+MIDLOC_microbiomedata
+
+#create an otu_table 
+otu_table <- as.matrix(MIDLOC_microbiomedata$counts)
+View(otu_table)
+
+names(MIDLOC_microbiomedata$metadata)[2] <- "group"
+
+#normalize by the root since certain count were removed
+library(slam)
+features_table <- MIDLOC_microbiomedata$counts
+col_sums <- col_sums(features_table)
+features_table_norm <- features_table
+features_table_norm$v <- features_table_norm$v/col_sums[features_table$j]
+col_sums(features_table_norm)
+MIDLOC_microbiomedata$counts <- features_table_norm
+
+#adding metadata
+metadata <- MIDLOC_microbiomedata$metadata
+
+#subsetting to only people with MD
+MIDLOC_microbiomedata_MD <- subset(MIDLOC_microbiomedata, `group` %in% c('MD'))
+metadata_MD <- MIDLOC_microbiomedata_MD$metadata
+
+# Correlation analysis alpha diversity
+library(ggplot2)
+
+#making a corplot and cor test manually
+MIDLOC_microbiomedata_MD_shannon <- rbiom::adiv_table(MIDLOC_microbiomedata_MD, adiv = "shannon")
+
+NMDAS_alpha <- data.frame(
+  Nmdas = MIDLOC_microbiomedata_MD$metadata$nmdas,
+  Adiv = MIDLOC_microbiomedata_MD_shannon$.diversity
+)
+
+# Create a raw scatter plot
+corplot_alpha_nmdas <- ggplot(NMDAS_alpha, aes(x = Nmdas, y = Adiv)) +
+  geom_point(color = "steelblue", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", color = "firebrick", se = TRUE) + # Regression line
+  labs(
+    title = paste("Correlation between the shannon α-diversity and the NMDAS"),
+    subtitle = paste("Spearman r =", round(cor(NMDAS_alpha$Nmdas, NMDAS_alpha$Adiv, method = "spearman"), 3)),
+    x = "The NMDAS",
+    y = "Shannon Diversity (MetaCyc Pathways)"
+  ) +
+  theme_minimal()
+corplot_alpha_nmdas
+
+cor.test(NMDAS_alpha$Nmdas, NMDAS_alpha$Adiv, method = "spearman")
+
+#looking at all the variables and alpha diversity
+cor_alpha_MD <- MIDLOC_microbiomedata_MD_shannon
+cor_alpha_MD <- cor_alpha_MD[, sapply(cor_alpha_MD, is.numeric)]
+cor_alpha_MD$.depth <- NULL
+cor_alpha_MD$sex_code <- NULL
+cor_alpha_MD$diabetes_code <- NULL
+cor_alpha_MD$probiotica <- NULL
+row.names(cor_alpha_MD) <- metadata_MD$.sample
+
+cor_matrix_alpha <- cor(cor_alpha_MD, method = "spearman", use = "pairwise.complete.obs")
+res_sig <- cor.mtest(cor_alpha_MD, conf.level = 0.95, method = "spearman")
+
+Alpha_correlation_table <- data.frame(
+  row.names = row.names(cor_matrix_alpha),
+  correlation = cor_matrix_alpha[,".diversity"],
+  p_value = res_sig$p[, ".diversity"]
+)
+
+Alpha_correlation_table$FDR <- p.adjust(Alpha_correlation_table$p_value, method = "fdr")
+
+# making a species table
+long_df <- taxa_table(MIDLOC_microbiomedata_MD, rank = 1, unc = "drop", taxa = 0.00000001)
+
+# Pivot to wide format
+cor_pathways <- long_df %>%
+  select(.sample, .taxa, .abundance) %>%
+  pivot_wider(names_from = .taxa, values_from = .abundance)
+
+# Convert to data frame and set row names
+cor_pathways <- as.data.frame(cor_pathways)
+rownames(cor_pathways) <- cor_pathways$.sample
+cor_pathways$.sample <- NULL
+
+# creating a data.frame with all the numerical data
+cor_metadata_MD <- metadata_MD
+cor_metadata_MD <- cor_metadata_MD[, sapply(cor_metadata_MD, is.numeric)]
+cor_metadata_MD$sex_code <- NULL
+cor_metadata_MD$diabetes_code <- NULL
+cor_metadata_MD$probiotica <- NULL
+row.names(cor_metadata_MD) <- metadata_MD$.sample
+
+# Calculate matrix
+cor_matrix <- cor(cor_pathways, cor_metadata_MD, method = "spearman", use = "pairwise.complete.obs")
+
+#saving it as csv file
+write.csv(cor_matrix, "cor_matrix_functional.csv")
+
+#calculate significance
+combined_data <- cbind(cor_pathways, cor_metadata_MD)
+res_sig <- cor.mtest(combined_data, conf.level = 0.95, method = "spearman")
+
+# Using only the variables as columns for the correlation
+taxa_names <- colnames(cor_pathways)
+meta_names <- colnames(cor_metadata_MD)
+
+p_raw_rect <- res_sig$p[taxa_names, meta_names]
+
+#saving it as csv file
+write.csv(p_raw_rect, "cor_pvalues_functional.csv")
+
+#calculating the adjusted p-value
+p_rect_adj <- matrix(NA, nrow = length(taxa_names), ncol = length(meta_names))
+rownames(p_rect_adj) <- taxa_names
+colnames(p_rect_adj) <- meta_names
+
+# Loop through each metadata variable and adjust p-values independently
+for (m_col in meta_names) {
+  
+  # Extract raw p-values for all taxa against this one metadata column
+  raw_p_col <- res_sig$p[taxa_names, m_col]
+  
+  # Apply FDR (Benjamini-Hochberg) to just this vector
+  adj_p_col <- p.adjust(raw_p_col, method = "fdr")
+  
+  # Put them back into our rectangular matrix
+  p_rect_adj[, m_col] <- adj_p_col
+}
+
+#saving it as csv file
+write.csv(p_rect_adj, "cor_FDR_functional.csv")
+
+
+cor_matrix_age_NMDAS <- cor_matrix[, c("age", "nmdas")]
+
+# Create the plot
+corrplot(cor_matrix, 
+         method = "color", 
+         p.mat = p_raw_rect,
+         sig.level = 0.05, 
+         insig = "blank", 
+         tl.col = "black", 
+         tl.srt = 45, 
+         tl.cex = 0.7)
+
+#for adjusted p-value
+corrplot(cor_matrix, 
+         method = "color", 
+         p.mat = p_rect_adj,
+         sig.level = 0.05, 
+         insig = "blank", 
+         tl.col = "black", 
+         tl.srt = 45, 
+         tl.cex = 0.7)
+
+#only for significant values
+cor_matrix_age_NMDAS <- cor_matrix[, c("age", "nmdas")]
+
+corrplot(cor_matrix, 
+         method = "color", 
+         p.mat = p_rect_adj,
+         sig.level = 0.05, 
+         insig = "blank", 
+         tl.col = "black", 
+         tl.srt = 45, 
+         tl.cex = 0.7)
+
+
+
+#checking the plots
+P161_PWY_acetylene_degradation_anaerobic <- "P161-PWY: acetylene degradation (anaerobic)"
+PWY0_1221_putrescine_degradation_II <- "PWY0-1221: putrescine degradation II"
+
+
+# Extract the vectors
+y_P161_PWY_acetylene_degradation_anaerobic <- cor_pathways[[P161_PWY_acetylene_degradation_anaerobic]]
+y_PWY0_1221_putrescine_degradation_II <- cor_pathways[[PWY0_1221_putrescine_degradation_II]]
+x_nmdas <- metadata_MD[["nmdas"]]
+x_age <- metadata_MD[["age"]]
+
+# Create a plotting data frame
+corplot_pathway <- data.frame(nmdas = x_nmdas, age = x_age, P161_PWY_acetylene_degradation_anaerobic_Abundance = y_P161_PWY_acetylene_degradation_anaerobic, PWY0_1221_putrescine_degradation_II_abundance = y_PWY0_1221_putrescine_degradation_II)
+
+library(ggplot2)
+
+corplot_acetylene_age <- ggplot(corplot_pathway, aes(x = age, y = P161_PWY_acetylene_degradation_anaerobic_Abundance)) +
+  geom_point(color = "steelblue", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", color = "firebrick", se = TRUE) + # Regression line
+  labs(
+    title = paste("Correlation between", P161_PWY_acetylene_degradation_anaerobic, "and NMDAS"),
+    subtitle = paste("Spearman r =", round(cor(x_age, y_P161_PWY_acetylene_degradation_anaerobic, method = "spearman"), 3)),
+    x = "age",
+    y = "Relative Abundance"
+  ) +
+  theme_minimal()
+corplot_acetylene_age
+cor.test(corplot_pathway$age ,corplot_pathway$P161_PWY_acetylene_degradation_anaerobic_Abundance , method = "spearman")
+
+corplot_putrescine_nmdas <- ggplot(corplot_pathway, aes(x = nmdas, y = PWY0_1221_putrescine_degradation_II_abundance)) +
+  geom_point(color = "steelblue", size = 3, alpha = 0.7) +
+  geom_smooth(method = "lm", color = "firebrick", se = TRUE) + # Regression line
+  labs(
+    title = paste("Correlation between", P161_PWY_acetylene_degradation_anaerobic, "and NMDAS"),
+    subtitle = paste("Spearman r =", round(cor(x_nmdas, y_P161_PWY_acetylene_degradation_anaerobic, method = "spearman"), 3)),
+    x = "nmdas",
+    y = "Relative Abundance"
+  ) +
+  theme_minimal()
+corplot_putrescine_nmdas
+cor.test(corplot_pathway$age ,corplot_pathway$P161_PWY_acetylene_degradation_anaerobic_Abundance , method = "spearman")
